@@ -332,4 +332,37 @@ describe('Главная страница', () => {
     cy.url().should('include', '/brands/honor/')
   })
 
+  it('Проверка отображения раздела "Смартфоны"', () => {
+    cy.visit('/')
+
+    cy.scrollTo('bottom', { duration: 2000 });
+    cy.contains('h2', 'Смартфоны')
+        .first().should('be.visible')
+  })
+
+  it('Проверка отображения раздела "Обогреватели"', () => {
+    cy.visit('/')
+
+    cy.scrollTo('bottom', { duration: 2000 });
+    cy.contains('h2', 'Обогреватели')
+        .first().should('be.visible')
+  })
+
+  it('Проверка отображения раздела "Cкачайте приложение"', () => {
+    cy.visit('/')
+
+    cy.scrollTo('bottom', {duration: 500});
+    cy.scrollTo('bottom', {duration: 500});
+    cy.get('img[alt="preview\\ app\\ photo"]')
+        .should('be.visible')
+  })
+
+  it('Проверка отображения раздела "Подпись на рассылку"', () => {
+    cy.visit('/')
+
+    cy.scrollTo('bottom', {duration: 500});
+    cy.scrollTo('bottom', {duration: 500});
+    cy.contains('button', 'Подписаться').first().should('be.visible')
+  })
+
 })

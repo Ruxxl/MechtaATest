@@ -1,6 +1,17 @@
 describe('Главная страница', () => {
+    beforeEach(() => {
+        cy.session('base-home', () => {
+            cy.visit('/');
+        });
+    });
 
-    it('Открывает базовый URL', () => {
-        cy.visit('/').wait(2000)
-        cy.get('a[aria-label="Visit\\ Samsung"] > img.group-has-hover\\:scale-88.transition-all').click()
-    })})
+    it('Проверка отображения раздела "Акции и Новости"', () => {
+        cy.visit('/').wait(5000)
+
+        cy.scrollTo('bottom', {duration: 500});
+        cy.scrollTo('bottom', {duration: 500});
+        cy.get('img[alt="preview\\ app\\ photo"]')
+            .should('be.visible')
+        cy.contains('button', 'Подписаться').first().should('be.visible')
+    })
+})
