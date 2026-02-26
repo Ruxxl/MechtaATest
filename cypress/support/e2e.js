@@ -1,17 +1,63 @@
-// ***********************************************************
-// This example support/e2e.js is processed and
-// loaded automatically before your test files.
-//
-// This is a great place to put global configuration and
-// behavior that modifies Cypress.
-//
-// You can change the location of this file or turn off
-// automatically serving support files with the
-// 'supportFile' configuration option.
-//
-// You can read more here:
-// https://on.cypress.io/configuration
-// ***********************************************************
+import './commands';
 
-// Import commands.js using ES2015 syntax:
-import './commands'
+// Список всех доменов и эндпоинтов для перехвата
+const interceptedDomains = [
+    // Google Analytics
+    'www.google-analytics.com',
+    'analytics.google.com',
+    'www.google.com/ccm/collect',
+    // Yandex
+    'mc.yandex.ru',
+    'yandex.ru',
+    // Amplitude
+    'api.lab.amplitude.com',
+    'api2.amplitude.com',
+    'sr-client-cfg.amplitude.com',
+    // Mindbox
+    'personalization-web-stable.mindbox.ru',
+    'api.mindbox.ru/v1.1/customer/track-visit?version=1.0.676&transport=XmlHttpRequest',
+    'api.mindbox.ru',
+    'web-static.mindbox.ru/js/byendpoint/mechtawebsite.js?_=', // timestamp динамический
+    // Другие сервисы
+    'autocomplete.diginetica.net',
+    'ams.creativecdn.com',
+    'privacy-cs.mail.ru',
+    'api.mdev.kz',
+    'ad.doubleclick.net',
+    'o4509365431369728.ingest.us.sentry.io',
+    'api.iconify.design',
+    'www.facebook.com',
+];
+
+// Собираем RegExp автоматически
+const urlRegex = new RegExp(`https:\\/\\/(${interceptedDomains.map(d => d.replace(/\//g, '\\/')).join('|')}).*`);
+
+beforeEach(() => {
+    cy.intercept(
+        {
+            method: /POST|GET|HEAD/, // Перехватываем POST, GET и HEAD
+            url: urlRegex,
+        },
+        {
+            log: false, // Отключаем логирование
+            onRequest(req) {
+                console.log('Intercepted request:', req); // Проверяем, перехвачен ли запрос
+            }
+        }
+    );
+
+    cy.viewport(1280, 970);
+
+    Cypress.on('uncaught:exception', (err) => {
+        if (
+            err.message.includes('Request failed with status code 400') || // Игнорируем ошибки 400
+            err.message.includes("Cannot read properties of undefined (reading 'status')") ||
+            err.message.includes("Cannot read properties of undefined (reading 'add')") ||
+            err.message.includes("VK is not defined") ||
+            err.message.includes("Cannot read properties of null (reading 'document')") // Ошибки null
+        ) {
+            return false; // Не прерывать тест
+        }
+        return true; // Все остальные ошибки не контролируем
+    });
+});
