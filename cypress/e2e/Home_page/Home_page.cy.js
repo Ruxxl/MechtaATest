@@ -128,7 +128,7 @@ describe('Главная страница', () => {
   })
 
   it('Проверка перехода на страницу Акции', () => {
-    cy.visit('/')
+    cy.visit('/').wait(2000)
     cy.get('img[alt="Акции"]').should('be.visible')
         .click()
     cy.url().should('include', '/useful/shares/')
@@ -138,7 +138,7 @@ describe('Главная страница', () => {
   })
 
   it('Проверка перехода на Cмартфоны Apple', () => {
-    cy.visit('/')
+    cy.visit('/').wait(2000)
     cy.get('img[alt="Смартфоны\\ Apple"]')
         .click()
     cy.url().should('include', '/section/smartfony/apple-iphone/')
@@ -148,7 +148,7 @@ describe('Главная страница', () => {
   })
 
   it('Проверка перехода на Cмартфоны', () => {
-    cy.visit('/')
+    cy.visit('/').wait(2000)
     cy.get('img[alt="Смартфоны"]')
         .click()
     cy.url().should('include', '/section/smartfony/')
@@ -156,4 +156,172 @@ describe('Главная страница', () => {
         .should('be.visible')
         .click()
   })
+
+  it('Проверка перехода на Наушники', () => {
+    cy.visit('/')
+    cy.get('img[alt="Наушники"]')
+        .click()
+    cy.url().should('include', '/section/naushniki/')
+    cy.contains('h1', 'Наушники').first()
+        .should('be.visible')
+        .click()
+  })
+
+  it('Проверка перехода на Ноутбуки', () => {
+    cy.visit('/')
+    cy.get('img[alt="Ноутбуки"]')
+        .click()
+    cy.url().should('include', '/section/noutbuki/')
+    cy.contains('h1', 'Ноутбуки').first()
+        .should('be.visible')
+        .click()
+  })
+
+  it('Проверка перехода на Пылесосы', () => {
+    cy.visit('/')
+    cy.get('img[alt="Пылесосы"]')
+        .click()
+    cy.url().should('include', '/section/uborka-doma/')
+    cy.contains('h1', 'Техника для уборки дома').first()
+        .should('be.visible')
+        .click()
+  })
+
+  it('Проверка перехода на Стиральные машины', () => {
+    cy.visit('/')
+    cy.get('img[alt="Стиральные\\ машины"]')
+        .click()
+    cy.url().should('include', '/section/stiralnye-mashiny/')
+    cy.contains('h1', 'Стиральные машины').first()
+        .should('be.visible')
+        .click()
+  })
+
+  it('Проверка перехода на Телевизоры', () => {
+    cy.visit('/')
+    cy.get('img[alt="Телевизоры"]')
+        .click()
+    cy.url().should('include', '/section/televizory/')
+    cy.contains('h1', 'Телевизоры').first()
+        .should('be.visible')
+        .click()
+  })
+
+  it('Проверка перехода на Аэрогрили', () => {
+    cy.visit('/')
+    cy.get('img[alt="Аэрогрили"]')
+        .click()
+    cy.url().should('include', '/section/aerogrili/')
+    cy.contains('h1', 'Аэрогрили').first()
+        .should('be.visible')
+        .click()
+  })
+
+  it('Проверка перехода на Холодильники', () => {
+    cy.visit('/')
+    cy.get('img[alt="Холодильники"]')
+        .click()
+    cy.url().should('include', '/section/holodilniki/')
+    cy.contains('h1', 'Холодильники').first()
+        .should('be.visible')
+        .click()
+  })
+
+  it('Проверка перехода на Электрические чайники', () => {
+    cy.visit('/')
+    cy.get('img[alt="Чайники"]')
+        .click()
+    cy.url().should('include', '/section/elektricheskie-chayniki/')
+    cy.contains('h1', 'Электрические чайники').first()
+        .should('be.visible')
+        .click()
+  })
+
+  it('Проверка перехода на Планшеты', () => {
+    cy.visit('/')
+    cy.get('img[alt="Планшеты"]')
+        .click()
+    cy.url().should('include', '/section/planshety/')
+    cy.contains('h1', 'Планшеты').first()
+        .should('be.visible')
+        .click()
+  })
+
+  it('Проверка отображения Рекомендации', () => {
+    cy.visit('/')
+    cy.contains('h2', 'Хиты продаж').first()
+        .should('be.visible')
+        .click()
+  })
+
+  it('Проверка отображения Популярные бренды', () => {
+    cy.visit('/')
+    cy.scrollTo('bottom', { duration: 5000 });
+    cy.contains('h2', 'Популярные бренды', { timeout: 10000 })
+        .should('exist')
+        .should('be.visible')
+
+    cy.get('[aria-label]').contains(/Visit Samsung/i).should('be.visible')
+    cy.get('[aria-label]').contains(/Visit Bork/i).should('be.visible')
+    cy.get('[aria-label]').contains(/Visit Apple/i).should('be.visible')
+    cy.get('[aria-label]').contains(/Visit Xiaomi/i).should('be.visible')
+    cy.get('[aria-label]').contains(/Visit LG/i).should('be.visible')
+    cy.get('[aria-label]').contains(/Visit HONOR/i).should('be.visible')
+  })
+
+  it('Проверка перехода на Brand Samsung', () => {
+    cy.visit('/')
+    cy.scrollTo('bottom', { duration: 2000 });
+    cy.get('a[aria-label="Visit\\ Samsung"] > img.group-has-hover\\:scale-88.transition-all')
+        .click()
+    cy.url().should('include', '/brands/samsung/')
+    cy.get('img[alt="samsung"]').eq(0)
+        .should('be.visible')
+  })
+
+  it('Проверка перехода на Brand Bork', () => {
+    cy.visit('/')
+    cy.scrollTo('bottom', { duration: 5000 });
+    cy.get('a[aria-label="Visit\\ Bork"] > img.group-has-hover\\:scale-88.transition-all')
+        .click()
+    cy.url().should('include', '/brands/bork/')
+    //cy.contains('h1', 'Bork').first()
+        //.should('be.visible')
+       //.click()
+  })
+
+  it('Проверка перехода на Brand Apple', () => {
+    cy.visit('/')
+    cy.scrollTo('bottom', { duration: 2000 });
+    cy.get('a[aria-label="Visit\\ Apple"] > img.group-has-hover\\:scale-88.transition-all')
+        .click()
+    cy.url().should('include', '/brands/apple/')
+    cy.contains('div', 'iPhone').first()
+        .should('be.visible')
+  })
+
+  it('Проверка перехода на Brand Xiaomi', () => {
+    cy.visit('/')
+    cy.scrollTo('bottom', { duration: 2000 });
+    cy.get('a[aria-label="Visit\\ Xiaomi"] > img.group-has-hover\\:scale-88.transition-all')
+        .click()
+    cy.url().should('include', '/brands/xiaomi/')
+  })
+
+  it('Проверка перехода на Brand LG', () => {
+    cy.visit('/')
+    cy.scrollTo('bottom', { duration: 2000 });
+    cy.get('a[aria-label="Visit\\ LG"] > img.group-has-hover\\:scale-88.transition-all')
+        .click()
+    cy.url().should('include', '/brands/lg/')
+  })
+
+  it('Проверка перехода на Brand Honor', () => {
+    cy.visit('/')
+    cy.scrollTo('bottom', { duration: 2000 });
+    cy.get('a[aria-label="Visit\\ HONOR"] > img.group-has-hover\\:scale-88.transition-all')
+        .click()
+    cy.url().should('include', '/brands/honor/')
+  })
+
 })
