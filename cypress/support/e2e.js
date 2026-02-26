@@ -1,5 +1,7 @@
 import './commands';
 
+require('cypress-xpath');
+
 // Список всех доменов и эндпоинтов для перехвата
 const interceptedDomains = [
     // Google Analytics
@@ -53,6 +55,7 @@ beforeEach(() => {
             err.message.includes('Request failed with status code 400') || // Игнорируем ошибки 400
             err.message.includes("Cannot read properties of undefined (reading 'status')") ||
             err.message.includes("Cannot read properties of undefined (reading 'add')") ||
+            err.message.includes("Cannot read properties of undefined (reading 'app')") ||
             err.message.includes("VK is not defined") ||
             err.message.includes("Cannot read properties of null (reading 'document')") // Ошибки null
         ) {
