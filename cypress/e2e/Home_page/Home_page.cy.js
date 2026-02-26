@@ -4,8 +4,16 @@ const homePage = new HomePage()
 
 describe('Главная страница', () => {
 
+  beforeEach(() => {
+    cy.session('base-home', () => {
+      homePage.interceptRequests(); // перехваты ДО visit
+      cy.visit('/');
+    });
+  });
+
   it('Открывает базовый URL', () => {
-    cy.visit('/')                  // откроет https://pp.yc.mechta.kz/
+
+    cy.visit('/')
     cy.url().should('include', 'pp.yc.mechta.kz')
   })
 
@@ -261,12 +269,12 @@ describe('Главная страница', () => {
         .should('exist')
         .should('be.visible')
 
-    cy.get('[aria-label]').contains(/Visit Samsung/i).should('be.visible')
-    cy.get('[aria-label]').contains(/Visit Bork/i).should('be.visible')
-    cy.get('[aria-label]').contains(/Visit Apple/i).should('be.visible')
-    cy.get('[aria-label]').contains(/Visit Xiaomi/i).should('be.visible')
-    cy.get('[aria-label]').contains(/Visit LG/i).should('be.visible')
-    cy.get('[aria-label]').contains(/Visit HONOR/i).should('be.visible')
+    cy.get('a[aria-label="Visit\\ Samsung"] > img.group-has-hover\\:scale-88.transition-all').should('be.visible')
+    cy.get('a[aria-label="Visit\\ Bork"] > img.group-has-hover\\:scale-88.transition-all').should('be.visible')
+    cy.get('a[aria-label="Visit\\ Apple"] > img.group-has-hover\\:scale-88.transition-all').should('be.visible')
+    cy.get('a[aria-label="Visit\\ Xiaomi"] > img.group-has-hover\\:scale-88.transition-all').should('be.visible')
+    cy.get('a[aria-label="Visit\\ LG"] > img.group-has-hover\\:scale-88.transition-all').should('be.visible')
+    cy.get('a[aria-label="Visit\\ HONOR"] > img.group-has-hover\\:scale-88.transition-all').should('be.visible')
   })
 
   it('Проверка перехода на Brand Samsung', () => {
