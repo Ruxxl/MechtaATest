@@ -365,6 +365,5 @@ describe('Главная страница', () => {
     cy.contains('button', 'Подписаться').first().should('be.visible')
   })
 
-  it 
 
 })
