@@ -1,5 +1,6 @@
 module.exports = {
   allowCypressEnv: false,
+  projectId: "zkqiu1",
 
   e2e: {
     baseUrl: 'https://pp.yc.mechta.kz',
