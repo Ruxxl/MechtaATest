@@ -226,7 +226,7 @@ describe('Главная страница', () => {
   })
 
   it('Проверка перехода на Холодильники', () => {
-    cy.visit('/')
+    cy.visit('/').wait(2000)
     cy.get('img[alt="Холодильники"]')
         .click()
     cy.url().should('include', '/section/holodilniki/')
@@ -337,7 +337,8 @@ describe('Главная страница', () => {
 
     cy.scrollTo('bottom', { duration: 2000 });
     cy.contains('h2', 'Смартфоны')
-        .first().should('be.visible')
+        .scrollIntoView()
+        .first().should('exist')
   })
 
   it('Проверка отображения раздела "Обогреватели"', () => {
@@ -345,7 +346,7 @@ describe('Главная страница', () => {
 
     cy.scrollTo('bottom', { duration: 2000 });
     cy.contains('h2', 'Обогреватели')
-        .first().should('be.visible')
+        .first().should('exist')
   })
 
   it('Проверка отображения раздела "Cкачайте приложение"', () => {

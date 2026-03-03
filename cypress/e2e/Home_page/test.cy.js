@@ -6,19 +6,12 @@ describe('Главная страница', () => {
     });
 
     it('Проверка отображения раздела "Акции и Новости"', () => {
-        cy.intercept('GET', '**/api/v3/product/*').as('getProduct');
-
-        cy.visit('https://www.mechta.kz/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/').wait(5000)
-
-        cy.wait('@getProduct').then((interception) => {
-            const productId = interception.response.body.name;
-            cy.log('Product ID:', productId);
-        })
-
         
+    cy.visit('/');
+    cy.scrollTo('bottom', { duration: 2000 });  
+    cy.contains('h2', 'Смартфоны').first()
+        .should('be.visible')
+        .click()
 
-
-
-        
     })
 })

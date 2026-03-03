@@ -48,7 +48,7 @@ beforeEach(() => {
         }
     );
 
-    cy.viewport(1280, 970);
+    cy.viewport(2560, 1440);
 
     Cypress.on('uncaught:exception', (err) => {
         if (

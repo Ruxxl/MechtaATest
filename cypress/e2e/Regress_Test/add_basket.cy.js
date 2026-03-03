@@ -4,7 +4,7 @@ import add_basket from "../../integration/pageObjects/add_basket";
 const homePage = new HomePage()
 const Add_basket = new add_basket()
 
-describe('Главная страница', () => {
+describe('Добавление товара в корзину', () => {
 
   beforeEach(() => {
     cy.session('base-home', () => {
@@ -14,7 +14,7 @@ describe('Главная страница', () => {
   });
 
   it('Открывает базовый URL', () => {
-
+    
     cy.visit('/')
     cy.url().should('include', 'pp.yc.mechta.kz')
   })
