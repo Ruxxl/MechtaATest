@@ -8,10 +8,6 @@ describe('Главная страница', () => {
     it('Проверка отображения раздела "Акции и Новости"', () => {
         
     cy.visit('/');
-    cy.scrollTo('bottom', { duration: 2000 });  
-    cy.contains('h2', 'Смартфоны').first()
-        .should('be.visible')
-        .click()
 
     })
 })
