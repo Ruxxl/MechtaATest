@@ -104,4 +104,24 @@ describe('Страница товара', () => {
 
   })
 
+  it ('Проверка отображение "На ветрине" сравнение с API', () => {
+
+    ProductPage.interceptRequests()
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    ProductPage.check_product_na_vetrine()
+
+  })
+
+  it('Проверка основных характеристик сравнение с API', () => {
+
+    ProductPage.interceptRequests()
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    ProductPage.check_main_properties()
+
+ })
+ 
 })

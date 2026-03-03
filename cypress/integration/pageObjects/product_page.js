@@ -164,5 +164,150 @@ class productPage {
             });
         })
     }
+
+    check_product_na_vetrine(){
+
+        cy.wait('@product', { timeout: 20000 }).then((interception) => {
+
+        expect(interception.response.statusCode).to.eq(200);
+
+        const onlyShopwindow = interception.response.body.onlyShopwindow;
+
+        cy.log(`onlyShopwindow: ${onlyShopwindow}`);
+
+        if (onlyShopwindow) {
+            // тест упадёт, если элемента нет или он скрыт
+            cy.contains('span', 'На витрине').first().should('be.visible');
+        } else {
+            // можно добавить проверку, что элемент не виден (опционально)
+            cy.contains('span', 'На витрине').first().should('not.exist');
+        }
+        });
+    }
+
+    check_main_properties() {
+    cy.wait('@product', { timeout: 20000 }).then((interception) => {
+        expect(interception.response.statusCode).to.eq(200);
+
+        const brand_name = interception.response.body.mainProperties[0].name;
+        const model_name = interception.response.body.mainProperties[1].name;
+        const srok_garant_name = interception.response.body.mainProperties[2].name;
+        const vstroyennaya_memory_name = interception.response.body.mainProperties[3].name;
+        const operativ_memory_name = interception.response.body.mainProperties[4].name;
+        const tip_matrica_ekrana_name = interception.response.body.mainProperties[5].name;
+
+        const brand_value = interception.response.body.mainProperties[0].value;
+        const model_value = interception.response.body.mainProperties[1].value;
+        const srok_garant_value = interception.response.body.mainProperties[2].value;
+        const vstroyennaya_memory_value = interception.response.body.mainProperties[3].value;
+        const operativ_memory_value = interception.response.body.mainProperties[4].value;
+        const tip_matrica_ekrana_value = interception.response.body.mainProperties[5].value;
+
+        cy.log(brand_name);
+        cy.log(model_name);
+        cy.log(srok_garant_name);
+        cy.log(vstroyennaya_memory_name);
+        cy.log(operativ_memory_name);
+        cy.log(tip_matrica_ekrana_name);
+
+        cy.log(brand_value);
+        cy.log(model_value);
+        cy.log(srok_garant_value);
+        cy.log(vstroyennaya_memory_value);
+        cy.log(operativ_memory_value);
+        cy.log(tip_matrica_ekrana_value);
+
+        // Проверка Brand
+        cy.contains('span', 'Бренд').first()
+            .should('be.visible')
+            .invoke('text')
+            .then((productBrandFromUI) => {
+                expect(productBrandFromUI.trim()).to.eq(brand_name);
+            });
+
+        // Проверка Model
+        cy.contains('span', 'Модель').first()
+            .should('be.visible')
+            .invoke('text')
+            .then((productModelFromUI) => {
+                expect(productModelFromUI.trim()).to.eq(model_name);
+            });
+
+        // Проверка Срок гарантии
+        cy.contains('span', 'Срок гарантии').first()
+            .should('be.visible')
+            .invoke('text')
+            .then((productGarantFromUI) => {
+                expect(productGarantFromUI.trim()).to.eq(srok_garant_name);
+            });
+
+        // Проверка Встроенная память
+        cy.contains('span', 'Объем встроенной памяти').first()
+            .should('be.visible')
+            .invoke('text')
+            .then((productMemoryFromUI) => {
+                expect(productMemoryFromUI.trim()).to.eq(vstroyennaya_memory_name);
+            });
+
+        // Проверка Оперативная память
+        cy.contains('span', 'Объем оперативной памяти').first()
+            .should('be.visible')
+            .invoke('text')
+            .then((productRamFromUI) => {
+                expect(productRamFromUI.trim()).to.eq(operativ_memory_name);
+            });
+
+        // Проверка Тип матрицы экрана
+        cy.contains('span', 'Тип матрицы экрана').first()
+            .should('be.visible')
+            .invoke('text')
+            .then((productMatrixFromUI) => {
+                expect(productMatrixFromUI.trim()).to.eq(tip_matrica_ekrana_name);
+            });
+
+        cy.contains('a', 'Apple').first()
+            .should('be.visible')
+            .invoke('text')
+            .then((productBrandValueFromUI) => {
+                expect(productBrandValueFromUI.trim()).to.eq(brand_value);
+            });
+
+        cy.get('section.py-1.w-full:nth-of-type(6) > div.flex.justify-between:nth-of-type(3) > span.text-nowrap.text-right:nth-of-type(2)')
+            .should('be.visible')
+            .invoke('text')
+            .then((productModelValueFromUI) => {
+                expect(productModelValueFromUI.trim()).to.eq(model_value);
+            });
+
+        cy.contains('span', '12 мес').first()
+            .should('be.visible')
+            .invoke('text')
+            .then((productGarantValueFromUI) => {
+                expect(productGarantValueFromUI.trim()).to.eq(srok_garant_value);
+            });
+
+        cy.contains('span', '256 ГБ').first()
+            .should('be.visible')
+            .invoke('text')
+            .then((productMemoryValueFromUI) => {
+                expect(productMemoryValueFromUI.trim()).to.eq(vstroyennaya_memory_value);
+            });
+
+        cy.contains('span', '8 ГБ').first()
+            .should('be.visible')
+            .invoke('text')
+            .then((productRamValueFromUI) => {
+                expect(productRamValueFromUI.trim()).to.eq(operativ_memory_value);
+            });
+
+        cy.contains('span', 'Super Retina XDR').first()
+            .should('be.visible')
+            .invoke('text')
+            .then((productMatrixValueFromUI) => {
+                expect(productMatrixValueFromUI.trim()).to.eq(tip_matrica_ekrana_value);
+            });
+    });
+}
+
 }
 export default productPage;
