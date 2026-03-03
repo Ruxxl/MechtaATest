@@ -57,6 +57,24 @@ class productPage {
         .should('be.oneOf', [200, 401]);
     }
 
+    check_product_name() {
+
+        cy.wait('@product', { timeout: 20000 }).then((interception) => {
+            expect(interception.response.statusCode).to.eq(200);
+
+            const productName = interception.response.body.name; // название из API
+            cy.log(productName)
+
+            cy.get('h1.pt-2\\!.pr-0\\!', {timeout: 20000}) // ← замени на реальный селектор
+                .should('be.visible')
+                .invoke('text')
+                .then((productNameFromUI) => {
+                    expect(productNameFromUI.trim()).to.eq(productName);
+                });
+        });
+
+    }
+
 }
 
 export default productPage;
