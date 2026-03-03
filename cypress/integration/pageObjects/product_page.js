@@ -75,6 +75,21 @@ class productPage {
 
     }
 
+    check_product_sticker() {
+        cy.wait('@product', { timeout: 20000 }).then((interception) => {
+            expect(interception.response.statusCode).to.eq(200);
+
+            const stickers = interception.response.body.stickers[0].name;
+            cy.log(stickers)
+
+            cy.contains('span', 'Trade-in').first()
+            .should('be.visible')
+                .invoke('text')
+                .then((productStickerFromUI) => {
+                    expect(productStickerFromUI.trim()).to.eq(stickers);
+                });
+        })
+    }
 }
 
 export default productPage;
