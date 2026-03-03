@@ -68,4 +68,20 @@ describe('Страница товара', () => {
     ProductPage.check_product_basePrice()
 
   })
+
+  it ('Проверка наличия кнопки "Купить сейчас"', () => {
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    cy.contains('button', 'Купить сейчас', {timeout:20000}).should('be.visible')
+
+  })
+
+  it ('Проверка наличия кнопки "В корзину"', () => {
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    cy.contains('button', 'В корзину', {timeout:20000}).should('be.visible')
+
+  })
 })
