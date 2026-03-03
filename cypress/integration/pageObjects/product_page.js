@@ -140,5 +140,29 @@ class productPage {
                 });
         })
     }
+
+    check_nalichie_v_magazinah() {
+
+        cy.wait('@shipment', { timeout: 20000 }).then((interception) => {
+
+            expect(interception.response.statusCode).to.eq(200);
+
+            const subdivisions = interception.response.body.subdivisions;
+
+            cy.log(subdivisions)
+
+            cy.get('p.text-mi-body-1.text-mi-brand-text-brand')
+                .should('be.visible')
+                .invoke('text')
+                .then((productSubdivisionsFromUI) => {
+
+                const uiSubdivisionsNumber = Number(
+                    productSubdivisionsFromUI.replace(/\D/g, '')
+                );
+
+                expect(uiSubdivisionsNumber).to.eq(subdivisions);
+            });
+        })
+    }
 }
 export default productPage;
