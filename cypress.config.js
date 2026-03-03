@@ -5,8 +5,8 @@ module.exports = {
   e2e: {
     baseUrl: 'https://pp.yc.mechta.kz',
     supportFile: 'cypress/support/e2e.js',
-    viewportWidth: 1188,
-    viewportHeight: 889,
+    viewportWidth: 2560,
+    viewportHeight: 1440,
     setupNodeEvents(on, config) {
       // Игнорирование определённых внешних запросов в логах
       const blockedUrls = [
