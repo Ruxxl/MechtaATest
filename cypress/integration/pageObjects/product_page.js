@@ -90,6 +90,55 @@ class productPage {
                 });
         })
     }
-}
 
+    check_product_finalPrice() {
+
+        cy.wait('@product', { timeout: 20000 }).then((interception) => {
+
+            expect(interception.response.statusCode).to.eq(200);
+
+            const finalPrice = interception.response.body.prices.finalPrice;
+
+            cy.log(finalPrice)
+
+            cy.get('section:nth-of-type(1) > section.gap-2.flex > p.text-mi-brand-text-brand.text-mi-header-2:nth-of-type(1)')
+            .should('be.visible')
+            .invoke('text')
+            .then((productPriceFromUI) => {
+
+                const normalizedUIPrice = productPriceFromUI
+                    .replace(/\s/g, '')   // removes spaces & NBSPs
+                    .replace('₸', '')     // removes currency symbol
+                    .trim();
+
+                expect(normalizedUIPrice).to.eq(finalPrice.toString());
+            });
+        })
+    }
+
+    check_product_basePrice(){
+
+        cy.wait('@product', { timeout: 20000 }).then((interception) => {
+
+            expect(interception.response.statusCode).to.eq(200);
+
+            const basePrice = interception.response.body.prices.basePrice;
+
+            cy.log(basePrice)
+
+            cy.get('section:nth-of-type(1) > section.gap-2.flex > p.text-mi-body-2.text-mi-text-secondary:nth-of-type(2)')
+                .should('be.visible')
+                .invoke('text')
+                .then((productPriceFromUI) => {
+
+                    const normalizedUIPrice = productPriceFromUI
+                        .replace(/\s/g, '')   // removes spaces & NBSPs
+                        .replace('₸', '')     // removes currency symbol
+                        .trim();
+
+                    expect(normalizedUIPrice).to.eq(basePrice.toString());
+                });
+        })
+    }
+}
 export default productPage;

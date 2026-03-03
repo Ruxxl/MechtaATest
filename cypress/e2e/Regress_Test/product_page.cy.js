@@ -39,13 +39,33 @@ describe('Страница товара', () => {
 
   })
 
-  it('Проверка стикера товара сравнение с API', () => {
+  it ('Проверка стикера товара сравнение с API', () => {
 
     ProductPage.interceptRequests()
 
     cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
 
     ProductPage.check_product_sticker()
+
+  })
+
+  it ('Проверка цены со скидкой сравнение с API', () => {
+
+    ProductPage.interceptRequests()
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    ProductPage.check_product_finalPrice()
+
+  })
+
+  it ('Проверка цены без скидки сравнение с API', () => {
+
+    ProductPage.interceptRequests()
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    ProductPage.check_product_basePrice()
 
   })
 })
