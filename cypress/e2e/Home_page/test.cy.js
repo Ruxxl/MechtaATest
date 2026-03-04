@@ -1,14 +1,14 @@
 import productPage from '../../integration/pageObjects/product_page';
 
 const ProductPage = new productPage()
-describe('Главная страница', () => {
+describe('Тестовый файл', () => {
     beforeEach(() => {
         cy.session('base-home', () => {
             cy.visit('/');
         });
     });
 
-    it ('Проверка отображение "На ветрине" сравнение с API', () => {
+    it ('Тест', () => {
 
     ProductPage.interceptRequests()
 

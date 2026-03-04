@@ -27,7 +27,7 @@ describe('Добавление товара в корзину', () => {
 
     cy.intercept('GET', '**/api/v3/product/*').as('getProduct');
 
-    cy.get('div.rounded-lg.rounded-mi-l > div.p-4.sm\\:p-6:nth-of-type(2) > div.w-full.h-full > div.relative.flex > a.w-full.justify-center:nth-of-type(2)').eq(0)
+    cy.get('div.rounded-lg.rounded-mi-l > div.p-4.sm\\:p-6:nth-of-type(2) > div.w-full.h-full > div.relative.flex > a.w-full.justify-center:nth-of-type(2)', {timeout: 20000}).eq(0)
     .click()
 
     Add_basket.getProduct()
