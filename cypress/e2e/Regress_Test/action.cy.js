@@ -1,3 +1,7 @@
+import actionPage from '../../integration/pageObjects/action';
+
+const ActionPage = new actionPage();
+
 describe('Страница Акции', () => {
 
     beforeEach(() => {
@@ -8,19 +12,38 @@ describe('Страница Акции', () => {
     });
 
     it('Перейти на страницу Акции через главное меню', () => {
-        // Your test steps here
-        cy.get('[data-testid="button"]').click();
-        cy.contains('Success').should('be.visible');
+
+        ActionPage.interceptRequests();
+        cy.visit('/')
+        cy.contains('div', 'Акции', {timeout: 10000}).first().click();
+        cy.url({
+            timeout: 10000
+        }).should('include', '/useful/shares/');
+        cy.get('img[alt="action-slogan"]', {
+            timeout: 10000
+        }).should('be.visible');
+        ActionPage.checkRequests_after_visit();
     });
 
     it('Перейти на страницу Акции по прямой ссылке', () => {
-        // Form interaction example
-        cy.get('input[type="text"]').type('test input');
-        cy.get('button[type="submit"]').click();
-        cy.url().should('include', '/success');
-    });
 
-    afterEach(() => {
-        // Cleanup after each test if needed
-    });
-});
+        ActionPage.interceptRequests();
+        cy.visit('/useful/shares/');
+        ActionPage.checkRequests_after_visit();
+
+    })
+
+    it('Проверка отображения категории в акциях', () => {
+        ActionPage.interceptRequests();
+        cy.visit('/useful/shares/');
+        ActionPage.check_category_in_action();
+
+    })
+
+    it('Проверка отображения типов акций', () => {
+        ActionPage.interceptRequests();
+        cy.visit('/useful/shares/');
+        ActionPage.check_action_types();
+
+    })
+})
