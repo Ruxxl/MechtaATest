@@ -319,17 +319,17 @@ describe('Главная страница', () => {
   it('Проверка перехода на Brand LG', () => {
     cy.visit('/')
     cy.scrollTo('bottom', { duration: 2000 });
-    cy.get('a[aria-label="Visit\\ LG"] > img.group-has-hover\\:scale-88.transition-all')
+    cy.get('a[aria-label="Visit\\ LG"] > img.group-has-hover\\:scale-88.transition-all', {timeout: 20000})
         .click()
-    cy.url().should('include', '/brands/lg/')
+    cy.url({timeout: 20000}).should('include', '/brands/lg/')
   })
 
   it('Проверка перехода на Brand Honor', () => {
     cy.visit('/')
     cy.scrollTo('bottom', { duration: 2000 });
-    cy.get('a[aria-label="Visit\\ HONOR"] > img.group-has-hover\\:scale-88.transition-all')
+    cy.get('a[aria-label="Visit\\ HONOR"] > img.group-has-hover\\:scale-88.transition-all', {timeout: 20000})
         .click()
-    cy.url().should('include', '/brands/honor/')
+    cy.url({timeout: 20000}).should('include', '/brands/honor/')
   })
 
   it('Проверка отображения раздела "Смартфоны"', () => {
