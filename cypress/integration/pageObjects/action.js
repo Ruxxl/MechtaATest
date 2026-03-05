@@ -77,6 +77,14 @@ class actionPage {
             const sixthTypeName = body.promotionTypes[5].name;
             const seventhTypeName = body.promotionTypes[6].name;
 
+            const typesCount = interception.response.body.promotionTypes[0].count; // Ожидаем 28
+
+            // 4. Проверка в DOM
+            cy.contains('a[data-slot="base"]', 'Все') // Находим ссылку, содержащую "Все"
+                .find('span.text-mi-text-secondary') // Ищем внутри неё span с числом
+                .should('be.visible')
+                .and('have.text', typesCount.toString()); // Сверяем текст с числом из API
+
             // 1. выполняем все проверки структуры, которые мы написали ранее
             expect(body.promotionTypes).to.have.length(7);
             cy.contains('div', firstTypeName)
@@ -107,9 +115,36 @@ class actionPage {
                 .first()
                 .should('be.visible')
                 .and('has.text', seventhTypeName);
-
         })
 
+    }
+
+    check_sorting() {
+
+        cy.get('div.w-full')
+            .contains('span[data-slot="label"]', 'Новые') // Ищет конкретный текст в конкретном слоте
+            .should('be.visible');
+
+        cy.get('div.w-full')
+            .contains('span[data-slot="label"]', 'Популярные акции') // Ищет конкретный текст в конкретном слоте
+            .should('be.visible')
+            .click();
+
+        cy.url().should('include', '?sortBy=popularity');
+
+        cy.get('div.w-full')
+            .contains('span[data-slot="label"]', 'Скоро закончатся') // Ищет конкретный текст в конкретном слоте
+            .should('be.visible')
+            .click();
+
+        cy.url().should('include', '?sortBy=popularity');
+
+        cy.get('div.w-full')
+            .contains('span[data-slot="label"]', 'Новые') // Ищет конкретный текст в конкретном слоте
+            .should('be.visible')
+            .click();
+
+        cy.url().should('include', '?sortBy=new');
     }
 }
 export default actionPage;
