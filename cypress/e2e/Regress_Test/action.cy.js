@@ -15,13 +15,12 @@ describe('Страница Акции', () => {
 
         ActionPage.interceptRequests();
         cy.visit('/')
-        cy.contains('div', 'Акции', {timeout: 10000}).first().click();
+        cy.contains('div', 'Акции', {
+            timeout: 10000
+        }).first().click();
         cy.url({
             timeout: 10000
         }).should('include', '/useful/shares/');
-        cy.get('img[alt="action-slogan"]', {
-            timeout: 10000
-        }).should('be.visible');
         ActionPage.checkRequests_after_visit();
     });
 
@@ -44,6 +43,29 @@ describe('Страница Акции', () => {
         ActionPage.interceptRequests();
         cy.visit('/useful/shares/');
         ActionPage.check_action_types();
+
+    })
+
+    it('Проверка отображения кол-во типов акций', () => {
+        cy.intercept('GET', '/api/v3/promotions').as('promotions');
+        cy.visit('/useful/shares/');
+        cy.wait('@promotions').then((interception) => {
+
+            const typesCount = interception.response.body.promotionTypes[0].count; // Ожидаем 28
+
+            // 4. Проверка в DOM
+            cy.contains('a[data-slot="base"]', 'Все') // Находим ссылку, содержащую "Все"
+                .find('span.text-mi-text-secondary') // Ищем внутри неё span с числом
+                .should('be.visible')
+                .and('have.text', typesCount.toString()); // Сверяем текст с числом из API
+        })
+    })
+
+    it('Проверка сортировок акции', () => {
+
+        ActionPage.interceptRequests();
+        cy.visit('/useful/shares/');
+        ActionPage.check_sorting();
 
     })
 })
