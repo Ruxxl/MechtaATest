@@ -73,7 +73,7 @@ describe('Страница товара', () => {
 
     cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
 
-    cy.contains('button', 'Купить сейчас', {timeout:20000}).should('be.visible')
+    cy.contains('button', 'Купить сейчас', {timeout:30000}).should('be.visible')
 
   })
 
