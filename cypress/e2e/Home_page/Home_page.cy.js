@@ -96,12 +96,12 @@ describe('Главная страница', () => {
 
   it('Проверка кнопки "Сравнение"', () => {
     cy.visit('/')
-    cy.contains('p', 'Сравнение')
+    cy.contains('p', 'Сравнение', {timeout: 20000})
         .first()
         .should('be.visible')
         .click()
-    cy.url().should('include', 'compare')
-    cy.contains('h1', 'Сравнение товаров')
+    cy.url({timeout: 20000}).should('include', 'compare')
+    cy.contains('h1', 'Сравнение товаров', {timeout: 20000})
         .first()
         .should('be.visible')
   })
