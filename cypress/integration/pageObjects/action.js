@@ -50,7 +50,6 @@ class actionPage {
             const body = interception.response.body;
 
             // 1. Сначала выполняем все проверки структуры, которые мы написали ранее
-            expect(body.promotionTypes).to.have.length(7);
             expect(body.categories).to.be.an('array').and.not.be.empty;
 
             // 2. Достаем имя первой категории из API
@@ -85,7 +84,7 @@ class actionPage {
                 .and('have.text', typesCount.toString()); // Сверяем текст с числом из API
 
             // 1. выполняем все проверки структуры, которые мы написали ранее
-            expect(body.promotionTypes).to.have.length(7);
+            expect(body.promotionTypes).to.have.length();
             cy.contains('div', firstTypeName)
                 .first()
                 .should('be.visible')

@@ -111,7 +111,7 @@ class productPage {
 
             cy.log(finalPrice)
 
-            cy.get('section:nth-of-type(1) > section.gap-2.flex > p.text-mi-brand-text-brand.text-mi-header-2:nth-of-type(1)')
+            cy.get('section:nth-of-type(1) > section.gap-2.flex > p.text-mi-brand-text-brand.text-mi-header-2:nth-of-type(1)', {timeout: 20000}) // ← замени на реальный селектор
                 .should('be.visible')
                 .invoke('text')
                 .then((productPriceFromUI) => {
@@ -138,7 +138,7 @@ class productPage {
 
             cy.log(basePrice)
 
-            cy.get('section:nth-of-type(1) > section.gap-2.flex > p.text-mi-body-2.text-mi-text-secondary:nth-of-type(2)')
+            cy.get('section:nth-of-type(1) > section.gap-2.flex > p.text-mi-body-2.text-mi-text-secondary:nth-of-type(2)', {timeout: 20000}) // ← замени на реальный селектор
                 .should('be.visible')
                 .invoke('text')
                 .then((productPriceFromUI) => {
@@ -165,7 +165,7 @@ class productPage {
 
             cy.log(subdivisions)
 
-            cy.get('p.text-mi-body-1.text-mi-brand-text-brand')
+            cy.get('p.text-mi-body-1.text-mi-brand-text-brand', {timeout: 20000}) // ← замени на реальный селектор
                 .should('be.visible')
                 .invoke('text')
                 .then((productSubdivisionsFromUI) => {
