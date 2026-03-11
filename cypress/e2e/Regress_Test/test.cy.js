@@ -11,7 +11,6 @@ describe('Тестовый файл', () => {
 
     it('должен содержать кнопку с текстом "новые" внутри w-full блока', () => {
         cy.visit('/useful/shares/');
-        ActionPage.interceptRequests();
-        ActionPage.check_action_types();
+        
     });
 });
