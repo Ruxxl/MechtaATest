@@ -24,7 +24,7 @@ class actionPage {
             expect(firstPromo.title).to.be.a('string').and.not.be.empty;
 
             // 2. Проверка типов акций (Promotion Types) — именно 7 штук
-            expect(body.promotionTypes).to.be.an('array').and.not.be.empty; 
+            expect(body.promotionTypes).to.be.an('array').and.not.be.empty;
 
             // Проверяем, что у каждого типа есть нужные поля (code, count, name)
             body.promotionTypes.forEach((type) => {
