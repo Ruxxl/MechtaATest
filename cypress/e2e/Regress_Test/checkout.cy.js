@@ -78,10 +78,12 @@ describe('Оформление заказа', () => {
 
         cy.visit('/')
 
+        Checkout.auth_checkout()
+
         cy.contains('a', 'Смартфоны Apple', {
                 timeout: 20000
             }).first()
-            .click()
+            .click({timeout: 20000})
 
         cy.intercept('GET', '**/api/v3/product/*').as('getProduct');
 
