@@ -186,17 +186,69 @@ class actionPage {
     }
 
     check_action_title() {
+
         cy.wait('@promotions').then((interception) => {
             const title_action = interception.response.body.promotions[0].title;
 
             const url_slug = interception.response.body.promotions[0].slug;
 
-            cy.contains('h3', title_action)
+            cy.intercept('GET', `/api/v2/actions/${url_slug}`).as('actionDetail');
+
+            cy.contains('h3', title_action, {
+                    timeout: 20000
+                })
                 .should('be.visible')
                 .click();
 
-            cy.url({timeout: 20000}).should('include', url_slug);
-            
+            cy.url({
+                timeout: 20000
+            }).should('include', url_slug);
+        })
+    }
+
+    check_detail_action() {
+
+        cy.wait('@promotions').then((interception) => {
+            const title_action = interception.response.body.promotions[0].title;
+
+            const url_slug = interception.response.body.promotions[0].slug;
+
+            cy.intercept('GET', `/api/v2/actions/${url_slug}`).as('actionDetail');
+
+            cy.contains('h3', title_action, {
+                    timeout: 20000
+                })
+                .should('be.visible')
+                .click();
+
+            cy.url({
+                timeout: 20000
+            }).should('include', url_slug);
+
+            cy.wait('@actionDetail').then(({
+                response
+            }) => {
+                // Проверяем статус и соответствие имени одной цепочкой
+                expect(response.statusCode).to.eq(200);
+                expect(response.body.data.name).to.eq(title_action);
+            });
+
+
+            // 2. Идем в навигацию и забираем текст из последней крошки
+            cy.get('nav[aria-label="breadcrumb"] [data-slot="list"] li', {
+                    timeout: 20000
+                })
+                .last() // Берем последнюю li в списке
+                .invoke('text')
+                .then((text) => {
+                    const cleanText = text.trim();
+
+                    // 3. Сравниваем с заголовком из бэкенда
+                    expect(cleanText, { timeout: 20000 }).to.equal(title_action);
+
+                    // Для отладки, если хочешь увидеть результат в консоли Cypress
+                    cy.log(`Найдено в крошках: ${cleanText}`);
+                });
         })
     }
 }

@@ -65,13 +65,13 @@ describe('Страница Акции', () => {
 
         ActionPage.interceptRequests();
         cy.visit('/useful/shares/');
-        ActionPage.check_sorting(); 
+        ActionPage.check_sorting();
 
     })
 
     it('Проверка отображения акций на странице', () => {
 
-        ActionPage.interceptRequests();   
+        ActionPage.interceptRequests();
 
         cy.visit('/useful/shares/');
 
@@ -79,5 +79,34 @@ describe('Страница Акции', () => {
 
     })
 
+    it('Проверка отображения детальной акции', () => {
+
+        ActionPage.interceptRequests();
+
+        cy.visit('/useful/shares/');
+
+        ActionPage.check_detail_action();
+        
+    })
+
+    it('Проверка проверка перехода на страницу детальной акции по прямой ссылке', () => {
+
+        cy.intercept('GET', '/api/v3/promotions').as('promotions');
+
+        cy.visit('/useful/shares/');
+
+        cy.wait('@promotions').then((interception) => {
+
+            // 1. Берем слаг из ответа API
+            const url_slug = interception.response.body.promotions[0].slug;
+
+            // 2. Переходим по ссылке, используя косые кавычки (backticks)
+            cy.visit(`/useful/shares/${url_slug}/`);
+
+            // 3. Опционально: проверяем, что URL действительно изменился правильно
+            cy.url({ timeout: 10000 }).should('include', url_slug);
+        })
+
+    })
 
 })
