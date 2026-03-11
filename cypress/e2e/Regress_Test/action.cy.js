@@ -51,7 +51,7 @@ describe('Страница Акции', () => {
         cy.visit('/useful/shares/');
         cy.wait('@promotions').then((interception) => {
 
-            const typesCount = interception.response.body.promotionTypes[0].count; 
+            const typesCount = interception.response.body.promotionTypes[0].count;
 
             // 4. Проверка в DOM
             cy.contains('a[data-slot="base"]', 'Все') // Находим ссылку, содержащую "Все"
@@ -65,7 +65,19 @@ describe('Страница Акции', () => {
 
         ActionPage.interceptRequests();
         cy.visit('/useful/shares/');
-        ActionPage.check_sorting();
+        ActionPage.check_sorting(); 
 
     })
+
+    it('Проверка отображения акций на странице', () => {
+
+        ActionPage.interceptRequests();   
+
+        cy.visit('/useful/shares/');
+
+        ActionPage.check_action_title();
+
+    })
+
+
 })

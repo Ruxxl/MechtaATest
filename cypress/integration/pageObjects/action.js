@@ -184,5 +184,20 @@ class actionPage {
 
         cy.url().should('include', '?sortBy=new');
     }
+
+    check_action_title() {
+        cy.wait('@promotions').then((interception) => {
+            const title_action = interception.response.body.promotions[0].title;
+
+            const url_slug = interception.response.body.promotions[0].slug;
+
+            cy.contains('h3', title_action)
+                .should('be.visible')
+                .click();
+
+            cy.url({timeout: 20000}).should('include', url_slug);
+            
+        })
+    }
 }
 export default actionPage;
