@@ -48,12 +48,36 @@ class actionPage {
     check_category_in_action() {
         cy.wait('@promotions').then((interception) => {
             const body = interception.response.body;
+            const apiCategories = interception.response.body.categories;
+            const apiCategoryNames = apiCategories.map(cat => cat.name.trim());
+
+
+            cy.get('div[data-slot="container"]:visible')
+                .first() // Берем первый из видимых контейнеров
+                .within(() => {
+                    // 2. Ищем элементы, исключая клоны слайдера (обычно у них есть спец. классы)
+                    // Если это не поможет, используем проверку на уникальность через Set
+                    cy.get('div[role="group"] p')
+                        .then(($els) => {
+                            const allTexts = [...$els].map(el => el.innerText.trim());
+
+                            // Если слайдер наплодил клонов, превращаем массив в Set (уникальные значения)
+                            // и обратно в массив
+                            const uiCategoryNames = [...new Set(allTexts)];
+
+                            // Теперь сравниваем
+                            expect(uiCategoryNames.length).to.equal(
+                                apiCategoryNames.length,
+                                `После удаления дубликатов в UI осталось ${uiCategoryNames.length}, в API ${apiCategoryNames.length}`
+                            );
+
+                            expect(uiCategoryNames).to.deep.equal(apiCategoryNames);
+                        });
+                });
 
             // 1. Сначала выполняем все проверки структуры, которые мы написали ранее
             expect(body.categories).to.be.an('array').and.not.be.empty;
 
-            // 2. Достаем имя первой категории из API
-            // В твоем JSON это "\u0421\u043c\u0430\u0440\u0442\u0444\u043e\u043d\u044b \u0438 \u0433\u0430\u0434\u0436\u0435\u0442\u044b"
             const firstCategoryName = body.categories[0].name;
 
             // 3. Сверяем: ищем элемент на странице, текст которого пришел из API

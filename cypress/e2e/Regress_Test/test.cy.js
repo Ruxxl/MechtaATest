@@ -9,32 +9,40 @@ describe('Тестовый файл', () => {
         });
     });
 
-    it('сравнение данных из перехваченного API с UI через expect', () => {
-        // 1. Настраиваем перехват (до посещения страницы)
-        // Укажи путь к твоему эндпоинту (можно использовать wildcard '*')
-        cy.intercept('GET', '/api/v3/promotions').as('getPromotions');
+    it('Сравнение категорий из API и UI через intercept', () => {
+        // 1. Перехватываем запрос (подставь свой URL)
+        cy.intercept('GET', '/api/v3/promotions').as('promotions');
 
-        // 2. Заходим на страницу
         cy.visit('/useful/shares/');
 
-        // 3. Ждем завершения запроса и работаем с его данными
-        cy.wait('@getPromotions').then((interception) => {
-            const apiData = interception.response.body.promotionTypes;
+        // 2. Ждем ответа и работаем с данными
+        cy.wait('@promotions').then((interception) => {
+            const apiCategories = interception.response.body.categories;
+            const apiCategoryNames = apiCategories.map(cat => cat.name.trim());
 
-            // Проходим по каждому элементу, пришедшему из API
-            apiData.forEach((promo) => {
-                // Находим <a> по названию акции
-                cy.contains('a[data-slot="base"]', promo.name)
-                    .should('be.visible')
-                    .find('span.text-mi-text-secondary')
-                    .invoke('text')
-                    .then((uiCountText) => {
-                        const uiCount = parseInt(uiCountText.trim(), 10);
+            // Ограничиваем поиск только внутри нужного контейнера
+            cy.get('div[data-slot="container"]:visible')
+                .first() // Берем первый из видимых контейнеров
+                .within(() => {
+                    // 2. Ищем элементы, исключая клоны слайдера (обычно у них есть спец. классы)
+                    // Если это не поможет, используем проверку на уникальность через Set
+                    cy.get('div[role="group"] p')
+                        .then(($els) => {
+                            const allTexts = [...$els].map(el => el.innerText.trim());
 
-                        // Используем expect для проверки
-                        expect(uiCount).to.equal(promo.count, `Количество для "${promo.name}" совпадает с API`);
-                    });
-            });
+                            // Если слайдер наплодил клонов, превращаем массив в Set (уникальные значения)
+                            // и обратно в массив
+                            const uiCategoryNames = [...new Set(allTexts)];
+
+                            // Теперь сравниваем
+                            expect(uiCategoryNames.length).to.equal(
+                                apiCategoryNames.length,
+                                `После удаления дубликатов в UI осталось ${uiCategoryNames.length}, в API ${apiCategoryNames.length}`
+                            );
+
+                            expect(uiCategoryNames).to.deep.equal(apiCategoryNames);
+                        });
+                });
         });
     });
-});
+})
