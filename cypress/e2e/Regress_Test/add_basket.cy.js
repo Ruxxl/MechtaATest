@@ -1,4 +1,4 @@
-import HomePage from "../../integration/pageObjects/home_page/home_page";
+import HomePage from "../../integration/pageObjects/home_page";
 import add_basket from "../../integration/pageObjects/add_basket";
 
 const homePage = new HomePage()
