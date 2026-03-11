@@ -113,8 +113,24 @@ class actionPage {
                 .first()
                 .should('be.visible')
                 .and('has.text', seventhTypeName);
-        })
 
+            const apiData = interception.response.body.promotionTypes;
+
+            // Проходим по каждому элементу, пришедшему из API
+            apiData.forEach((promo) => {
+                // Находим <a> по названию акции
+                cy.contains('a[data-slot="base"]', promo.name)
+                    .should('be.visible')
+                    .find('span.text-mi-text-secondary')
+                    .invoke('text')
+                    .then((uiCountText) => {
+                        const uiCount = parseInt(uiCountText.trim(), 10);
+
+                        // Используем expect для проверки
+                        expect(uiCount).to.equal(promo.count, `Количество для "${promo.name}" совпадает с API`);
+                    });
+            });
+        })
     }
 
     check_sorting() {

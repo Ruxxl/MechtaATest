@@ -51,7 +51,7 @@ describe('Страница Акции', () => {
         cy.visit('/useful/shares/');
         cy.wait('@promotions').then((interception) => {
 
-            const typesCount = interception.response.body.promotionTypes[0].count; // Ожидаем 28
+            const typesCount = interception.response.body.promotionTypes[0].count; 
 
             // 4. Проверка в DOM
             cy.contains('a[data-slot="base"]', 'Все') // Находим ссылку, содержащую "Все"
