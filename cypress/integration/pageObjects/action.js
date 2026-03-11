@@ -84,7 +84,7 @@ class actionPage {
                 .and('have.text', typesCount.toString()); // Сверяем текст с числом из API
 
             // 1. выполняем все проверки структуры, которые мы написали ранее
-            expect(body.promotionTypes).to.have.length();
+            expect(body.promotionTypes).to.be.an('array').and.not.be.empty;
             cy.contains('div', firstTypeName)
                 .first()
                 .should('be.visible')
