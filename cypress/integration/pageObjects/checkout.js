@@ -21,6 +21,8 @@ class checkout {
             .should('be.visible')
             .click();
 
+            
+
         cy.wait(5000);
 
         cy.intercept('GET', '/api/v2/user').as('user');
@@ -98,11 +100,44 @@ class checkout {
                 force: true
             })
 
+    }
+
+    step_two() {
+
         cy.wait('@get_checkout', {
             timeout: 20000
         }).then((interception) => {
 
             expect(interception.response.statusCode).to.equal(200);
+            const pickup_point = interception.response.body.data.delivery_info.pickup.stores[0].shop_name
+
+            cy.contains('h4', 'Самовывоз', {
+                timeout: 20000
+            }).first().should('be.exist').click({
+                force: true
+            })
+
+            cy.get('input[name="shop"]', {
+                timeout: 20000
+            }).eq(1).should('be.visible').click()
+
+            cy.get(`button[aria-label="${pickup_point}"]`, {
+                timeout: 20000
+            }).should('be.visible').click();
+
+            cy.contains('button', 'Заберу отсюда', {
+                    timeout: 20000
+                }).first()
+                .should('be.visible')
+                .click()
+
+            cy.get('button[type="button"]', {
+                timeout: 20000
+            }).contains('Далее')
+            .click({
+                force: true
+            })
+
         })
 
     }
