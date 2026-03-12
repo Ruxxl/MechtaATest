@@ -19,13 +19,16 @@ describe('Тестовый файл', () => {
 
         cy.login()
 
-        cy.visit('/product/smartfon-apple-iphone-17-pro-max-256gb-deep-blue/')
+        cy.visit('/product/smart-chasy-apple-watch-se-gps-40mm-midnight-aluminium-case-with-ink-sport-loop-mxea3qia/')
 
         cy.contains('button', 'Купить сейчас', {timeout: 20000}).first()
             .click()
+ 
 
         Checkout.step_one()
+        
 
+        Checkout.step_two()
 
     });
 })
