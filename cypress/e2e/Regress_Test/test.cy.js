@@ -16,12 +16,16 @@ describe('Тестовый файл', () => {
     it('Сравнение категорий из API и UI через intercept', () => {
         cy.visit('/')
 
+        Checkout.request_intercept()
+
         Checkout.auth_checkout()
 
         cy.contains('a', 'Смартфоны Apple', {
                 timeout: 20000
             }).first()
-            .click({timeout: 20000})
+            .click({
+                timeout: 20000
+            })
 
         cy.intercept('GET', '**/api/v3/product/*').as('getProduct');
 
@@ -40,5 +44,9 @@ describe('Тестовый файл', () => {
             .click()
 
         cy.url().should('include', '/checkout')
+
+        Checkout.step_one()
+
+        
     });
 })

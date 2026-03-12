@@ -136,6 +136,8 @@ describe('Оформление заказа', () => {
 
         cy.visit('/')
 
+        Checkout.request_intercept()
+
         Checkout.auth_checkout()
 
         cy.contains('a', 'Смартфоны Apple', {
