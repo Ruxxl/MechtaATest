@@ -11,6 +11,7 @@ describe('Оформление заказа', () => {
         cy.session('base-home', () => {
 
             cy.visit('/');
+            cy.visit('/product/smartfon-apple-iphone-17-pro-max-256gb-deep-blue/')
         });
     });
 
@@ -240,6 +241,20 @@ describe('Оформление заказа', () => {
         cy.visit('/checkout')
 
         Checkout.checkout_card()
+
+    })
+
+    it('Оформление заказа "Рассрочка/Кредит"', () => {
+
+        cy.login()
+
+        cy.visit('/product/smartfon-apple-iphone-17-pro-max-256gb-deep-blue/')
+
+        cy.contains('button', 'Купить сейчас')
+            .should('be.visible')
+            .click()
+
+        Checkout.checkout_broker()
 
     })
 

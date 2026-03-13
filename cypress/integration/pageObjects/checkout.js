@@ -110,6 +110,8 @@ class checkout {
         // 5. Подтверждаем и переходим дальше
         cy.contains('button', 'Заберу отсюда').should('be.visible').click();
 
+        cy.wait(2000)
+
         cy.get('#delivery-button_desktop').should('be.visible').click();
 
     }
@@ -208,6 +210,79 @@ class checkout {
                 cy.contains('button', 'Подтвердить заказ').first().should('be.visible').click();
 
                 cy.url().should('include', 'https://payments.ioka.kz/orders/ord_')
+
+            });
+        })
+
+    }
+
+    checkout_broker() {
+
+        cy.get('#person-button_desktop').should('be.exist').click();
+
+        this.step_two()
+
+        cy.wait('@get_checkout').then(({
+            response
+        }) => {
+            expect(response.statusCode).to.equal(200);
+
+            const payment_type_credit = response.body.data.payment_info.variants[2].name;
+
+            cy.log(payment_type_credit)
+
+            cy.intercept('GET', '**/api/v2/checkout*').as('checkoutQuery');
+            cy.contains('h4', payment_type_credit).should('be.visible').click();
+            cy.wait('@checkoutQuery').then((interception) => {
+                const query = interception.request.query;
+
+                // Поскольку в URL параметр payment_info — это строка JSON: {"payment_id":4}
+                // Нам нужно распарсить её, чтобы проверить значение внутри
+                const paymentInfo = JSON.parse(query.payment_info);
+
+                // Сама проверка что запрос ушел с payment_type 5
+                expect(paymentInfo.payment_id).to.equal(5);
+
+                // Проверка person_type (он идет отдельным параметром)
+                expect(query.person_type).to.eq('1');
+
+                cy.get('[data-slot="title"]')
+                    .should('be.visible')
+                    .and('contain.text', 'Бонусы и фишки недоступны при оформлении в рассрочку или кредит');
+
+                cy.get('#payment-button_desktop').should('be.visible').click();
+
+                cy.contains('p', payment_type_credit).first().should('be.exist');
+
+                cy.get('[name="iin"]').type('000000000000')
+
+                cy.contains('p', 'Зачем мне вводить эти данные')
+                    .should('have.text', 'Зачем мне вводить эти данные')
+                    .should('be.visible')
+
+                cy.contains('h3', 'Введите данные')
+                    .should('be.visible')
+                    .should('have.text', 'Введите данные')
+
+                cy.contains('a', 'публичным договором')
+                    .should('be.visible')
+                    .and('have.attr', 'href', 'https://storage.mechta.kz/uploads/2025/07/21/ed0636f2ac326e9aeb137137739b581069bdb697.pdf')
+                    .and('have.attr', 'target', '_blank');
+
+                cy.contains('a', 'сбор, обработку и хранение персональных данных')
+                    .should('be.visible')
+                    .and('have.attr', 'href', 'https://www.mechta.kz/ClientConsentForm.pdf')
+                    .and('have.attr', 'target', '_blank');
+
+                cy.contains('button', 'Далее').first().click();
+
+
+                cy.get('[data-slot="body"]')
+                    .should('be.visible')
+                    .and('contain.text', 'отправлено SMS с кодом');
+
+                //cy.contains('button', 'Подтвердить заказ').first().should('be.visible').click();
+
 
             });
         })

@@ -24,9 +24,7 @@ describe('Тестовый файл', () => {
             .should('be.visible')
             .click()
 
-        cy.visit('/checkout')
-
-        Checkout.checkout_card()
+        Checkout.checkout_broker()
 
     })
 
