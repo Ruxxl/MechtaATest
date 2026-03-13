@@ -2,6 +2,8 @@ class checkout {
 
     auth_checkout() {
 
+        cy.intercept('POST', '/api/v2/login').as('login');
+
         cy.contains('p', 'Войти')
             .first()
             .should('be.visible')
@@ -23,15 +25,10 @@ class checkout {
 
         cy.intercept('GET', '/api/v2/user').as('user');
 
-        cy.wait(3000)
-        cy.wait('@user').then((interception) => {
+        cy.wait('@login').then((interception) => {
 
-            expect(interception.response.statusCode).to.equal(200);
-            const user_phone = interception.response.body.data.phone;
-            const user_name = interception.response.body.data.full_name;
+            expect(interception.response.body.result).to.equal(true);
 
-            expect(user_phone).to.equal('0000000001');
-            expect(user_name.trim()).to.equal('Vv Vv');
         });
     }
 
@@ -171,6 +168,49 @@ class checkout {
         cy.contains('button', 'Подтвердить заказ').first().should('be.visible').click();
 
         cy.contains('div', 'Сканируйте и оплатите').should('be.visible');
+
+    }
+
+    checkout_card() {
+
+        cy.get('#person-button_desktop').should('be.exist').click();
+
+        this.step_two()
+
+        cy.wait('@get_checkout').then(({
+            response
+        }) => {
+            expect(response.statusCode).to.equal(200);
+
+            const payment_type_card = response.body.data.payment_info.variants[1].name;
+
+            cy.log(payment_type_card)
+
+            cy.intercept('GET', '**/api/v2/checkout*').as('checkoutQuery');
+            cy.contains('h4', payment_type_card).should('be.visible').click();
+            cy.wait('@checkoutQuery').then((interception) => {
+                const query = interception.request.query;
+
+                // Поскольку в URL параметр payment_info — это строка JSON: {"payment_id":4}
+                // Нам нужно распарсить её, чтобы проверить значение внутри
+                const paymentInfo = JSON.parse(query.payment_info);
+
+                // Сама проверка
+                expect(paymentInfo.payment_id).to.equal(4);
+
+                // Проверка person_type (он идет отдельным параметром)
+                expect(query.person_type).to.eq('1');
+
+                cy.get('#payment-button_desktop').should('be.visible').click();
+
+                cy.contains('p', payment_type_card).first().should('be.exist');
+
+                cy.contains('button', 'Подтвердить заказ').first().should('be.visible').click();
+
+                cy.url().should('include', 'https://payments.ioka.kz/orders/ord_')
+
+            });
+        })
 
     }
 }

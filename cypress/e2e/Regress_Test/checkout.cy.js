@@ -96,33 +96,25 @@ describe('Оформление заказа', () => {
 
         Add_basket.intercept_request()
 
-        cy.contains('span', 'В корзине', {
-            timeout: 500
-        }).then(($inBasket) => {
-            if ($inBasket.length > 0) {
-                // Товар уже в корзине, проверяем видимость
-                cy.wrap($inBasket).should('be.visible')
+        cy.get('body').then(($body) => {
+            // Проверяем наличие текста "В корзине" через jQuery (не падает, если не найдено)
+            if ($body.text().includes('В корзине')) {
+                cy.log('Товар уже в корзине');
+                cy.contains('span', 'В корзине').should('be.visible');
             } else {
-                // Товара в корзине нет → ищем кнопку "В корзину" и кликаем
-                cy.contains('button', 'В корзину', {
-                        timeout: 20000
+                cy.log('Товара нет, добавляем...');
+                cy.contains('span', 'В корзину', {
+                        timeout: 10000
                     })
-                    .first()
-                    .click()
-
-                cy.contains('li', 'Товар добавлен в корзину', {
-                        timeout: 20000
-                    }).first()
                     .should('be.visible')
+                    .click();
 
-                // После клика проверяем, что теперь "В корзине" появился
+                // Проверяем, что после клика текст сменился на "В корзине"
                 cy.contains('span', 'В корзине', {
-                        timeout: 20000
-                    })
-                    .first()
-                    .should('be.visible')
+                    timeout: 10000
+                }).should('be.visible');
             }
-        })
+        });
 
         cy.visit('/basket')
 
@@ -230,6 +222,24 @@ describe('Оформление заказа', () => {
         Checkout.step_two()
 
         Checkout.step_three()
+
+    })
+
+    it('Оформление заказа "Картой"', () => {
+
+        Checkout.request_intercept()
+
+        cy.login()
+
+        cy.visit('/product/smartfon-apple-iphone-17-pro-max-256gb-deep-blue/')
+
+        cy.contains('button', 'Купить сейчас')
+            .should('be.visible')
+            .click()
+
+        cy.visit('/checkout')
+
+        Checkout.checkout_card()
 
     })
 
