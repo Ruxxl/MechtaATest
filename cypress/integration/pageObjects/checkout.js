@@ -2,8 +2,6 @@ class checkout {
 
     auth_checkout() {
 
-        cy.intercept('GET', '/api/v2/user').as('user');
-
         cy.contains('p', 'Войти')
             .first()
             .should('be.visible')
@@ -17,10 +15,15 @@ class checkout {
             .should('be.visible')
             .click();
 
+        cy.intercept('GET', '/api/v2/user').as('user');
+
         cy.get('input[aria-label="pin input 1 of 4"]')
             .should('be.visible')
             .type('0000');
 
+        cy.intercept('GET', '/api/v2/user').as('user');
+
+        cy.wait(3000)
         cy.wait('@user').then((interception) => {
 
             expect(interception.response.statusCode).to.equal(200);
@@ -41,6 +44,8 @@ class checkout {
     }
 
     step_one() {
+
+        cy.wait(2000)
 
         cy.wait('@get_checkout').then((interception) => {
 

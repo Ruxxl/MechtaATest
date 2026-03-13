@@ -145,11 +145,11 @@ describe('Оформление заказа', () => {
 
     it('Переход в оформление с кнопки "Купить сейчас"', () => {
 
+        cy.login()
+
         cy.visit('/')
 
         Checkout.request_intercept()
-
-        Checkout.auth_checkout()
 
         cy.contains('a', 'Смартфоны Apple', {
                 timeout: 20000
@@ -201,7 +201,7 @@ describe('Оформление заказа', () => {
 
         cy.login()
 
-        cy.visit('/product/smart-chasy-apple-watch-se-gps-40mm-midnight-aluminium-case-with-ink-sport-loop-mxea3qia/')
+        cy.visit('/product/smartfon-apple-iphone-17-pro-max-256gb-deep-blue/')
 
         cy.contains('button', 'Купить сейчас', {
                 timeout: 20000
@@ -219,7 +219,7 @@ describe('Оформление заказа', () => {
 
         cy.login()
 
-        cy.visit('/product/smart-chasy-apple-watch-se-gps-40mm-midnight-aluminium-case-with-ink-sport-loop-mxea3qia/')
+        cy.visit('/product/smartfon-apple-iphone-17-pro-max-256gb-deep-blue/')
 
         cy.contains('button', 'Купить сейчас')
             .should('be.visible')
