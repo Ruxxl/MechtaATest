@@ -7,6 +7,9 @@ module.exports = {
     supportFile: 'cypress/support/e2e.js',
     viewportWidth: 2560,
     viewportHeight: 1440,
+    defaultCommandTimeout: 30000,
+    responseTimeout: 30000,
+
     setupNodeEvents(on, config) {
       // Игнорирование определённых внешних запросов в логах
       const blockedUrls = [
@@ -30,7 +33,7 @@ module.exports = {
       })
 
       return config
-      
+
     },
   },
 }
