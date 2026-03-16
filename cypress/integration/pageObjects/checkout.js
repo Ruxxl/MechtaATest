@@ -140,9 +140,6 @@ class checkout {
                 cy.wrap(variant.name).as(`variant_${index}`);
             });
 
-            // Клик выносим ЗА пределы цикла, чтобы он сработал один раз
-            // Проверяем, что в массиве вообще есть хотя бы два элемента
-
             cy.intercept('GET', '/api/v2/checkout?payment_info=%7B%22payment_id%22:4%7D&person_type=1').as('check_payment');
 
 

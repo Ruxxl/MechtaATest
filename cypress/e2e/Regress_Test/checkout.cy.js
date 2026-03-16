@@ -247,6 +247,8 @@ describe('Оформление заказа', () => {
     it('Оформление заказа "Рассрочка/Кредит"', () => {
 
         cy.login()
+        
+        cy.intercept('GET', '/api/v2/checkout?**').as('get_checkout');
 
         cy.visit('/product/smartfon-apple-iphone-17-pro-max-256gb-deep-blue/')
 
