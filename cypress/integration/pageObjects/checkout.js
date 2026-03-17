@@ -37,7 +37,7 @@ class checkout {
         cy.intercept('GET', '/api/v3/personal/delivery-addresses').as('delivery_addresses');
         cy.intercept('GET', '/api/v2/personal/card').as('card');
         cy.intercept('GET', '/api/v2/checkout?**').as('get_checkout');
-
+        cy.intercept('GET', '/api/v3/personal/delivery-addresses').as('delivery_adresses')
     }
 
     step_one() {
@@ -100,12 +100,14 @@ class checkout {
         // Вместо eq(1) лучше использовать более специфичный селектор, если возможно
         cy.get('input[name="shop"]').should('be.visible').click();
 
-        // 4. Выбираем конкретный магазин из API
         cy.get('@targetShop').then((shopName) => {
-            cy.get(`button[aria-label="${shopName}"]`)
+            // We wrap the shopName in single quotes '' to handle double quotes inside the string
+            cy.get(`button[aria-label='${shopName}']`)
                 .should('be.visible')
                 .click();
         });
+
+
 
         // 5. Подтверждаем и переходим дальше
         cy.contains('button', 'Заберу отсюда').should('be.visible').click();
@@ -113,6 +115,17 @@ class checkout {
         cy.wait(2000)
 
         cy.get('#delivery-button_desktop').should('be.visible').click();
+
+    }
+
+    step_two_delivery() {
+
+        cy.wait(1000)
+        // 1. Перехватываем данные из API
+
+        cy.get('input[name="address"]').should('be.visible').click();
+
+        cy.contains('p', 'Кенесары 40').first().should('be.visible').click();
 
     }
 
@@ -219,6 +232,8 @@ class checkout {
 
         this.step_two()
 
+
+
         cy.wait('@get_checkout').then(({
             response
         }) => {
@@ -282,6 +297,49 @@ class checkout {
 
 
             });
+        })
+
+    }
+
+    checkout_pay_in_shop() {
+
+        cy.get('#person-button_desktop').should('be.exist').click();
+
+        this.step_two()
+
+        cy.wait('@get_checkout').then(({
+            response
+        }) => {
+            expect(response.statusCode).to.equal(200);
+
+            const payment_type_payShop = response.body.data.payment_info.variants[3].name;
+
+            cy.log(payment_type_payShop)
+
+            cy.intercept('GET', '**/api/v2/checkout*').as('checkoutQuery');
+
+            cy.contains('h4', payment_type_payShop).should('be.visible').click();
+        })
+
+        cy.wait('@checkoutQuery').then((interception) => {
+            const query = interception.request.query;
+
+            // Поскольку в URL параметр payment_info — это строка JSON: {"payment_id":4}
+            // Нам нужно распарсить её, чтобы проверить значение внутри
+            const paymentInfo = JSON.parse(query.payment_info);
+
+            // Сама проверка
+            expect(paymentInfo.payment_id).to.equal(1);
+
+            // Проверка person_type (он идет отдельным параметром)
+            expect(query.person_type).to.eq('1');
+
+            cy.get('#payment-button_desktop').should('be.visible').click();
+
+            cy.contains('button', 'Подтвердить заказ').first().should('be.visible').click();
+
+            cy.url().should('include', '/cabinet/order')
+
         })
 
     }
