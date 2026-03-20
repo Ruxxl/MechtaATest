@@ -95,7 +95,7 @@ class productPage {
         }).then((interception) => {
             expect(interception.response.statusCode).to.eq(200);
 
-            const productNameApi = interception.response.body.name; // название из API
+            const productNameApi = interception.response.body.name;
 
             cy.get(selectors.productName).should('have.text', productNameApi)
         })
