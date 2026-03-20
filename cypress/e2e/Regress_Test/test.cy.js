@@ -16,48 +16,46 @@ describe('Тестовый файл', () => {
         });
     });
 
-    it('Сравнение категорий из API и UI через intercept', () => {
+    it('Тестовый сценарии', () => {
 
         cy.login()
 
+        cy.intercept('GET', '/api/v3/product/*/subdivisions').as('subdivisions')
+
         // 1. Visit the page
-        cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/');
+        cy.visit('/product/smartfon-oppo-reno-14-5g-12512gb-opal-white/');
 
-        cy.wait(10000)
+        cy.get('#product-shops').click()
 
-        cy.get('body').then(($body) => {
+        cy.wait('@subdivisions').then((interception) => {
+            expect(interception.response.statusCode).to.equal(200);
 
-            const hasAddBtn = $body.find('button:contains("В корзину")').length > 0;
-            const hasInCart = $body.find('button:contains("В корзине")').length > 0;
+            const responseData = interception.response.body;
 
-            if (hasAddBtn) {
+            // 1. Фильтруем объекты
+            const shopwindowItems = responseData.filter(item => item.stock === "На витрине");
 
-                cy.log('Кнопка: В корзину');
+            // 2. Извлекаем только адреса в отдельный массив
+            const shopAddresses = shopwindowItems.map(item => item.address);
 
-                cy.get('#product-add-to-basket')
-                    .should('be.visible')
-                    .click();
+            // 3. Выводим результат для проверки в консоль Cypress
+            cy.log('Адреса магазинов с витриной:', shopAddresses);
 
-                cy.contains('button', 'В корзине', {
-                        timeout: 20000
-                    })
-                    .should('be.visible')
-                    .click();
+            // Если адресов нет, можно добавить проверку, чтобы тест не шел дальше вхолостую
+            expect(shopAddresses).to.have.length.greaterThan(0);
 
-            } else if (hasInCart) {
-
-                cy.log('Кнопка: Уже в корзине');
-
-                cy.contains('button', 'В корзине')
-                    .should('be.visible')
-                    .click();
-
-            } else {
-
-                throw new Error('❌ Не найдена ни одна кнопка');
-
-            }
+            // Теперь массив shopAddresses доступен для дальнейших действий
+            // Например, можно сохранить его в alias, чтобы использовать ВНЕ этого блока .then()
+            cy.wrap(shopAddresses).as('targetAddresses');
         });
+
+        // Пример использования сохраненных адресов позже в тесте:
+        cy.get('@targetAddresses').then((addresses) => {
+            addresses.forEach((addr) => {
+                cy.contains(addr).should('be.visible');
+            });
+        });
+
 
     })
 

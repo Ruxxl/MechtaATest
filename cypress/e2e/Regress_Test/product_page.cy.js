@@ -176,5 +176,15 @@ describe('Страница товара', () => {
 
   })
 
+  it('Проверка отображении Доступно на самовывоз только на витрине проверка API', () => {
+
+    ProductPage.interceptRequests()
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    ProductPage.check_only_shop_adresses()
+
+  })
+
 
 })
