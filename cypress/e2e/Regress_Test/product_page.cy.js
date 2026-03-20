@@ -15,7 +15,8 @@ describe('Страница товара', () => {
 
     cy.url().should('include', 'product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium')
 
-    cy.contains('button', 'В корзину', {timeout:20000}).first().should('be.visible')
+    cy.get('#product-add-to-basket').should('be.visible')
+      .should('include.text', 'В корзину')
 
   })
 
@@ -32,85 +33,50 @@ describe('Страница товара', () => {
   it('Проверка название товара сравнение с API', () => {
 
     ProductPage.interceptRequests()
-    
+
     cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
 
     ProductPage.check_product_name()
 
   })
 
-  it ('Проверка стикера товара сравнение с API', () => {
+  it('Проверка стикера Оф.товар сравнение с API', () => {
 
     ProductPage.interceptRequests()
 
     cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
 
-    ProductPage.check_product_sticker()
+    ProductPage.check_official_product_sticker()
 
   })
 
-  it ('Проверка цены со скидкой сравнение с API', () => {
+  it('Проверка стикера Выгода сравнение с API', () => {
 
     ProductPage.interceptRequests()
 
     cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
 
-    ProductPage.check_product_finalPrice()
+    ProductPage.check_discount_product_sticker()
 
   })
 
-  it ('Проверка цены без скидки сравнение с API', () => {
+  it('Проверка кнопки копирования названия товара', () => {
 
     ProductPage.interceptRequests()
 
     cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
 
-    ProductPage.check_product_basePrice()
+    ProductPage.check_productName_copy_button()
 
   })
 
-  it ('Проверка наличия кнопки "Купить сейчас"', () => {
-
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
-
-    cy.contains('button', 'Купить сейчас', {timeout:30000}).should('be.visible')
-
-  })
-
-  it ('Проверка наличия кнопки "В корзину"', () => {
-
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
-
-    cy.contains('button', 'В корзину', {timeout:20000}).should('be.visible')
-
-  })
-
-  it ('Проверка "Наличия в магазинах" сравнение с API', () => {
+  it('Проверка  отображения количества отзывова внизу название товара', () => {
 
     ProductPage.interceptRequests()
 
     cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
 
-    ProductPage.check_nalichie_v_magazinah()
-  })
-
-  it ('Проверка наличия кнопки "Купить в Trade-In"', () => {
-
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
-
-    cy.contains('button', 'Купить в Trade-in', {timeout:20000}).first().should('be.visible')
-
-    cy.contains('p', 'Breezy Trade-In', {timeout:20000}).first().should('be.visible')
-
-  })
-
-  it ('Проверка отображение "На ветрине" сравнение с API', () => {
-
-    ProductPage.interceptRequests()
-
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
-
-    ProductPage.check_product_na_vetrine()
+    ProductPage.check_reviews()
 
   })
 
@@ -122,6 +88,93 @@ describe('Страница товара', () => {
 
     ProductPage.check_main_properties()
 
- })
- 
+  })
+
+  it('Проверка отображение "На ветрине" сравнение с API', () => {
+
+    ProductPage.interceptRequests()
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    ProductPage.check_only_shop_sticker()
+
+  })
+
+  it('Проверка цены со скидкой сравнение с API', () => {
+
+    ProductPage.interceptRequests()
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    ProductPage.check_product_finalPrice()
+
+  })
+
+  it('Проверка цены без скидки сравнение с API', () => {
+
+    ProductPage.interceptRequests()
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    ProductPage.check_product_basePrice()
+
+  })
+
+  it('Проверка фишек товара сравнение с API', () => {
+
+    ProductPage.interceptRequests()
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    ProductPage.check_product_fishki()
+
+  })
+
+  it('Проверка наличия кнопки "Купить сейчас"', () => {
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    cy.get('#product-buy-now').should('be.visible')
+      .should('include.text', 'Купить сейчас')
+
+  })
+
+  it('Проверка наличия кнопки "В корзину"', () => {
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    cy.get('#product-add-to-basket').should('be.visible')
+      .should('include.text', 'В корзину')
+
+  })
+
+  it('Проверка кнопки "Все характеристики"', () => {
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    ProductPage.check_vse_charakteristiki()
+
+  })
+
+  it('Проверка значении кредита', () => {
+
+    ProductPage.interceptRequests()
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    ProductPage.check_product_credit_value()
+
+  })
+
+  it('Проверка кнопки самовывоза кол-во магазинов', () => {
+
+    ProductPage.interceptRequests()
+
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+    ProductPage.check_shops_button()
+
+  })
+
+
 })

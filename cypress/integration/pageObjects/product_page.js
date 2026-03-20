@@ -1,6 +1,35 @@
+const selectors = {
+    productName: '#product-name',
+    official_product_sticker: '#product-official-supplier-sticker',
+    discount_product_sticker: '#product-benefit-sticker',
+    productName_copy_button: '#product-copy-name-button',
+    product_reviews: '#product-review-count',
+    only_shop_sticker: '#product-only-shop-window_desktop',
+    product_final_price: '#product-final-price',
+    product_base_price: '#product-base-price',
+    product_chips: '#product-chips',
+    product_credit: '#product-option-card-1',
+    product_shops_button: '#product-shops',
+    //main properties
+    brand_product_properties_name: '#product-characteristic-key-1',
+    model_product_properties_name: '#product-characteristic-key-2',
+    srok_garant_product_properties_name: "#product-characteristic-key-3",
+    vstroyennaya_memory_main_properties_name: '#product-characteristic-key-4',
+    operativ_memory_main_properties_name: '#product-characteristic-key-5',
+    tip_matrica_ekrana_main_properties_name: '#product-characteristic-key-6',
+    //main properties value
+    brand_product_properties_value: '#product-characteristic-value-1',
+    model_product_properties_value: '#product-сharacteristics-value-2',
+    srok_garant_product_properties_value: '#product-сharacteristics-value-3',
+    vstroyennaya_memory_main_properties_value: '#product-сharacteristics-value-4',
+    operativ_memory_main_properties_value: '#product-сharacteristics-value-5',
+    tip_matrica_ekrana_main_properties_value: '#product-сharacteristics-value-6'
+};
+
 class productPage {
+
     interceptRequests() {
-        cy.intercept('GET', '**/api/v3/product/**/alternatives').as('alternatives');
+        //cy.intercept('GET', '**/api/v3/product/**/alternatives').as('alternatives');
         cy.intercept('GET', '**/api/v2/header/info').as('header_info');
         cy.intercept('GET', '**/api/v2/header/cities').as('header_cities');
         cy.intercept('GET', '**/api/v2/basket').as('get_basket');
@@ -26,7 +55,7 @@ class productPage {
 
     wait_requests() {
         const requests = [
-            '@alternatives',
+            //'@alternatives',
             '@header_info',
             '@header_cities',
             '@get_basket',
@@ -44,7 +73,7 @@ class productPage {
             '@catalog_meta',
             '@compare_small',
             '@view_product',
-            '@seo_resolve',
+            '@seo_resolve'
         ];
 
         requests.forEach(alias => {
@@ -66,56 +95,132 @@ class productPage {
         }).then((interception) => {
             expect(interception.response.statusCode).to.eq(200);
 
-            const productName = interception.response.body.name; // название из API
-            cy.log(productName)
+            const productNameApi = interception.response.body.name; // название из API
 
-            cy.get('h1.pt-2\\!.pr-0\\!', {
-                    timeout: 20000
-                }) // ← замени на реальный селектор
-                .should('be.visible')
-                .invoke('text')
-                .then((productNameFromUI) => {
-                    expect(productNameFromUI.trim()).to.eq(productName);
-                });
-        });
+            cy.get(selectors.productName).should('have.text', productNameApi)
+        })
 
     }
 
-    check_product_sticker() {
+    check_official_product_sticker() {
+
+        cy.get(selectors.official_product_sticker).should('be.visible').should('have.text', 'Официальный поставщик')
+
+    }
+
+    check_discount_product_sticker() {
         cy.wait('@product', {
             timeout: 20000
         }).then((interception) => {
             expect(interception.response.statusCode).to.eq(200);
 
-            const stickers = interception.response.body.stickers[0].name;
-            cy.log(stickers)
+            // 1. Получаем число из API (например, 70000)
+            const discountApi = interception.response.body.discount;
 
-            cy.contains('span', 'Trade-in').first()
-                .should('be.visible')
+            // 2. Используем cy.get() со строкой из объекта selectors
+            cy.get(selectors.discount_product_sticker)
                 .invoke('text')
-                .then((productStickerFromUI) => {
-                    expect(productStickerFromUI.trim()).to.eq(stickers);
+                .then((text) => {
+                    // 3. Очищаем текст от "Выгода", "₸" и пробелов
+                    const cleanText = text.replace(/\D/g, '');
+
+                    // 4. Сравниваем как числа
+                    expect(Number(cleanText)).to.eq(Number(discountApi));
                 });
-        })
+        });
     }
 
-    check_product_finalPrice() {
+    check_productName_copy_button() {
+
+        cy.get(selectors.productName_copy_button).should('be.visible').wait(5000).click()
+
+        cy.get('[data-slot="title"]').should('have.text', 'Название товара скопировано')
+
+    }
+
+    check_reviews() {
+
+        cy.get(selectors.product_reviews).should('be.visible')
+    }
+
+    check_main_properties() {
 
         cy.wait('@product', {
             timeout: 20000
         }).then((interception) => {
+            expect(interception.response.statusCode).to.eq(200);
+
+            const mainPropertiesApi = interception.response.body.mainProperties;
+
+            const uiSelectors = [{
+                    key: selectors.brand_product_properties_name,
+                    value: selectors.brand_product_properties_value
+                },
+                {
+                    key: selectors.model_product_properties_name,
+                    value: selectors.model_product_properties_value
+                },
+                {
+                    key: selectors.srok_garant_product_properties_name,
+                    value: selectors.srok_garant_product_properties_value
+                },
+                {
+                    key: selectors.vstroyennaya_memory_main_properties_name,
+                    value: selectors.vstroyennaya_memory_main_properties_value
+                },
+                {
+                    key: selectors.operativ_memory_main_properties_name,
+                    value: selectors.operativ_memory_main_properties_value
+                },
+                {
+                    key: selectors.tip_matrica_ekrana_main_properties_name,
+                    value: selectors.tip_matrica_ekrana_main_properties_value
+                }
+            ];
+
+            uiSelectors.forEach((selector, index) => {
+                const apiProperty = mainPropertiesApi[index];
+
+                // 🔹 Проверка name
+                cy.get(selector.key)
+                    .should('be.visible')
+                    .invoke('text')
+                    .then((text) => {
+                        expect(text.trim()).to.eq(apiProperty.name);
+                    });
+
+                // 🔹 Проверка value
+                cy.get(selector.value)
+                    .should('be.visible')
+                    .invoke('text')
+                    .then((text) => {
+                        const uiValue = text.replace(/\u00a0/g, ' ').trim();
+                        const apiValue = apiProperty.value.replace(/\u00a0/g, ' ').trim();
+
+                        expect(uiValue).to.include(apiValue);
+                    });
+            });
+        });
+    }
+
+    check_only_shop_sticker() {
+
+        cy.get(selectors.only_shop_sticker).should('be.visible').should('have.text', 'На витрине')
+
+    }
+
+    check_product_finalPrice() {
+
+        cy.wait('@product').then((interception) => {
 
             expect(interception.response.statusCode).to.eq(200);
 
             const finalPrice = interception.response.body.prices.finalPrice;
 
-            cy.log(finalPrice)
-
-            cy.get('section:nth-of-type(1) > section.gap-2.flex > p.text-mi-brand-text-brand.text-mi-header-2:nth-of-type(1)', {timeout: 20000}) // ← замени на реальный селектор
+            cy.get(selectors.product_final_price)
                 .should('be.visible')
                 .invoke('text')
                 .then((productPriceFromUI) => {
-
                     const normalizedUIPrice = productPriceFromUI
                         .replace(/\s/g, '') // removes spaces & NBSPs
                         .replace('₸', '') // removes currency symbol
@@ -136,9 +241,7 @@ class productPage {
 
             const basePrice = interception.response.body.prices.basePrice;
 
-            cy.log(basePrice)
-
-            cy.get('section:nth-of-type(1) > section.gap-2.flex > p.text-mi-body-2.text-mi-text-secondary:nth-of-type(2)', {timeout: 20000}) // ← замени на реальный селектор
+            cy.get(selectors.product_base_price)
                 .should('be.visible')
                 .invoke('text')
                 .then((productPriceFromUI) => {
@@ -153,179 +256,91 @@ class productPage {
         })
     }
 
-    check_nalichie_v_magazinah() {
+    check_product_fishki() {
 
-        cy.wait('@shipment', {
+        cy.wait('@product_offers', {
             timeout: 20000
         }).then((interception) => {
 
             expect(interception.response.statusCode).to.eq(200);
 
-            const subdivisions = interception.response.body.subdivisions;
+            const chips = interception.response.body.chips; // Например, 74
 
-            cy.log(subdivisions)
-
-            cy.get('p.text-mi-body-1.text-mi-brand-text-brand', {timeout: 20000}) // ← замени на реальный селектор
+            cy.get(selectors.product_chips)
                 .should('be.visible')
                 .invoke('text')
-                .then((productSubdivisionsFromUI) => {
+                .then((productTextFromUI) => {
 
-                    const uiSubdivisionsNumber = Number(
-                        productSubdivisionsFromUI.replace(/\D/g, '')
-                    );
+                    const normalizedUIChips = productTextFromUI.replace(/\D/g, '');
 
-                    expect(uiSubdivisionsNumber).to.eq(subdivisions);
+                    expect(normalizedUIChips).to.eq(chips.toString());
                 });
-        })
-    }
-
-    check_product_na_vetrine() {
-
-        cy.wait('@product', {
-            timeout: 20000
-        }).then((interception) => {
-
-            expect(interception.response.statusCode).to.eq(200);
-
-            const onlyShopwindow = interception.response.body.onlyShopwindow;
-
-            cy.log(`onlyShopwindow: ${onlyShopwindow}`);
-
-            if (onlyShopwindow) {
-                // тест упадёт, если элемента нет или он скрыт
-                cy.contains('span', 'На витрине').first().should('be.visible');
-            } else {
-                // можно добавить проверку, что элемент не виден (опционально)
-                cy.contains('span', 'На витрине').first().should('not.exist');
-            }
         });
     }
 
-    check_main_properties() {
+    check_vse_charakteristiki() {
+
+        const characteristics_text = 'Характеристики, комплектация и внешний вид товара могут быть изменены производителем без предварительного уведомления и могут отличаться от указанных в каталоге интернет-магазина.'
+
+        cy.get('#open-characteristics-modal-btn').should('be.visible')
+            .should('include.text', 'Все характеристики ')
+            .wait(5000)
+            .click()
+
+        cy.contains('p', characteristics_text).should('be.visible')
+
+    }
+
+    check_product_credit_value() {
+
         cy.wait('@product', {
             timeout: 20000
         }).then((interception) => {
             expect(interception.response.statusCode).to.eq(200);
 
-            const brand_name = interception.response.body.mainProperties[0].name;
-            const model_name = interception.response.body.mainProperties[1].name;
-            const srok_garant_name = interception.response.body.mainProperties[2].name;
-            const vstroyennaya_memory_name = interception.response.body.mainProperties[3].name;
-            const operativ_memory_name = interception.response.body.mainProperties[4].name;
-            const tip_matrica_ekrana_name = interception.response.body.mainProperties[5].name;
+            // Допустим, из API пришло число 62500
+            const creditApi = interception.response.body.credit.pay_per_month;
 
-            const brand_value = interception.response.body.mainProperties[0].value;
-            const model_value = interception.response.body.mainProperties[1].value;
-            const srok_garant_value = interception.response.body.mainProperties[2].value;
-            const vstroyennaya_memory_value = interception.response.body.mainProperties[3].value;
-            const operativ_memory_value = interception.response.body.mainProperties[4].value;
-            const tip_matrica_ekrana_value = interception.response.body.mainProperties[5].value;
-
-            cy.log(brand_name);
-            cy.log(model_name);
-            cy.log(srok_garant_name);
-            cy.log(vstroyennaya_memory_name);
-            cy.log(operativ_memory_name);
-            cy.log(tip_matrica_ekrana_name);
-
-            cy.log(brand_value);
-            cy.log(model_value);
-            cy.log(srok_garant_value);
-            cy.log(vstroyennaya_memory_value);
-            cy.log(operativ_memory_value);
-            cy.log(tip_matrica_ekrana_value);
-
-            // Проверка Brand
-            cy.contains('span', 'Бренд').first()
+            cy.get(selectors.product_credit)
                 .should('be.visible')
                 .invoke('text')
-                .then((productBrandFromUI) => {
-                    expect(productBrandFromUI.trim()).to.eq(brand_name);
-                });
+                .then((uiText) => {
+                    // Удаляем всё, кроме цифр (пробелы, ₸, /мес, &nbsp;)
+                    const cleanUiValue = uiText.replace(/\D/g, '');
 
-            // Проверка Model
-            cy.contains('span', 'Модель').first()
-                .should('be.visible')
-                .invoke('text')
-                .then((productModelFromUI) => {
-                    expect(productModelFromUI.trim()).to.eq(model_name);
-                });
-
-            // Проверка Срок гарантии
-            cy.contains('span', 'Срок гарантии').first()
-                .should('be.visible')
-                .invoke('text')
-                .then((productGarantFromUI) => {
-                    expect(productGarantFromUI.trim()).to.eq(srok_garant_name);
-                });
-
-            // Проверка Встроенная память
-            cy.contains('span', 'Объем встроенной памяти').first()
-                .should('be.visible')
-                .invoke('text')
-                .then((productMemoryFromUI) => {
-                    expect(productMemoryFromUI.trim()).to.eq(vstroyennaya_memory_name);
-                });
-
-            // Проверка Оперативная память
-            cy.contains('span', 'Объем оперативной памяти').first()
-                .should('be.visible')
-                .invoke('text')
-                .then((productRamFromUI) => {
-                    expect(productRamFromUI.trim()).to.eq(operativ_memory_name);
-                });
-
-            // Проверка Тип матрицы экрана
-            cy.contains('span', 'Тип матрицы экрана').first()
-                .should('be.visible')
-                .invoke('text')
-                .then((productMatrixFromUI) => {
-                    expect(productMatrixFromUI.trim()).to.eq(tip_matrica_ekrana_name);
-                });
-
-            cy.contains('a', 'Apple').first()
-                .should('be.visible')
-                .invoke('text')
-                .then((productBrandValueFromUI) => {
-                    expect(productBrandValueFromUI.trim()).to.eq(brand_value);
-                });
-
-            cy.get('section.py-1.w-full:nth-of-type(6) > div.flex.justify-between:nth-of-type(3) > span.text-nowrap.text-right:nth-of-type(2)')
-                .should('be.visible')
-                .invoke('text')
-                .then((productModelValueFromUI) => {
-                    expect(productModelValueFromUI.trim()).to.eq(model_value);
-                });
-
-            cy.contains('span', '12 мес').first()
-                .should('be.visible')
-                .invoke('text')
-                .then((productGarantValueFromUI) => {
-                    expect(productGarantValueFromUI.trim()).to.eq(srok_garant_value);
-                });
-
-            cy.contains('span', '256 ГБ').first()
-                .should('be.visible')
-                .invoke('text')
-                .then((productMemoryValueFromUI) => {
-                    expect(productMemoryValueFromUI.trim()).to.eq(vstroyennaya_memory_value);
-                });
-
-            cy.contains('span', '8 ГБ').first()
-                .should('be.visible')
-                .invoke('text')
-                .then((productRamValueFromUI) => {
-                    expect(productRamValueFromUI.trim()).to.eq(operativ_memory_value);
-                });
-
-            cy.contains('span', 'Super Retina XDR').first()
-                .should('be.visible')
-                .invoke('text')
-                .then((productMatrixValueFromUI) => {
-                    expect(productMatrixValueFromUI.trim()).to.eq(tip_matrica_ekrana_value);
+                    // Сравниваем строго как числа
+                    expect(Number(cleanUiValue)).to.eq(Number(creditApi));
                 });
         });
     }
+
+    check_shops_button() {
+
+        cy.wait('@subdivisions', {
+            timeout: 20000
+        }).then((interception) => {
+            // 1. Получаем количество объектов из массива в теле ответа
+            // Предположим, массив лежит в корне body или в свойстве, как в вашем дампе
+            const shopsArray = interception.response.body;
+            const shopsCount = shopsArray.length; // Это будет число (например, 3)
+
+            // 2. Берем текст из кнопки в UI
+            cy.get(selectors.product_shops_button)
+                .should('be.visible')
+                .invoke('text')
+                .then((buttonText) => {
+                    // 3. Извлекаем только цифры из текста кнопки
+                    // "Доступно в 3 магазинах" -> "3"
+                    const countFromUI = buttonText.replace(/\D/g, '');
+
+                    // 4. Сравниваем количество объектов с числом из UI
+                    expect(Number(countFromUI)).to.eq(shopsCount);
+                });
+        });
+
+    }
+
+
 
 }
 export default productPage;
