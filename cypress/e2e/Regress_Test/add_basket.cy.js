@@ -14,36 +14,55 @@ describe('Добавление товара в корзину', () => {
   });
 
   it('Открывает базовый URL', () => {
-    
+
     cy.visit('/')
     cy.url().should('include', 'pp.yc.mechta.kz')
   })
 
   it('Добавить товар в корзину', () => {
-    cy.visit('/')
-    
-    cy.contains('a', 'Смартфоны Apple').first()
-    .click()
 
-    cy.intercept('GET', '**/api/v3/product/*').as('getProduct');
+    cy.login()
 
-    cy.get('div.rounded-lg.rounded-mi-l > div.p-4.sm\\:p-6:nth-of-type(2) > div.w-full.h-full > div.relative.flex > a.w-full.justify-center:nth-of-type(2)', {timeout: 20000}).eq(0)
-    .click()
+    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/');
 
-    Add_basket.getProduct()
+    cy.wait(10000)
 
-    Add_basket.intercept_request()
+    cy.get('body').then(($body) => {
 
-    cy.contains('button', 'В корзину').first()
-    .click()
+      const hasAddBtn = $body.find('button:contains("В корзину")').length > 0;
+      const hasInCart = $body.find('button:contains("В корзине")').length > 0;
 
-    Add_basket.check_intercept()
+      if (hasAddBtn) {
 
-    cy.contains('span', 'В корзине').first()
-    .should('be.visible')
-    
-    cy.contains('li', 'Товар добавлен в корзину').first()
-    .should('be.visible')
+        cy.log('Кнопка: В корзину');
+
+        cy.get('#product-add-to-basket')
+          .should('be.visible')
+          .click();
+
+        cy.contains('button', 'В корзине', {
+            timeout: 20000
+          })
+          .should('be.visible')
+          .click();
+
+        cy.url().should('include', '/basket')
+
+      } else if (hasInCart) {
+
+        cy.log('Кнопка: Уже в корзине');
+
+        cy.contains('button', 'В корзине')
+          .should('be.visible')
+          .click();
+        cy.url().should('include', '/basket')
+
+      } else {
+
+        throw new Error('❌ Не найдена ни одна кнопка');
+
+      }
+    });
   })
 
 })

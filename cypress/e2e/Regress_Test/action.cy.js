@@ -15,9 +15,7 @@ describe('Страница Акции', () => {
 
         ActionPage.interceptRequests();
         cy.visit('/')
-        cy.contains('div', 'Акции', {
-            timeout: 10000
-        }).first().click();
+        cy.contains('div', 'Акции').first().click();
         cy.url({
             timeout: 10000
         }).should('include', '/useful/shares/');

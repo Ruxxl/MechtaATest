@@ -89,36 +89,37 @@ describe('Оформление заказа', () => {
 
         cy.wait(10000)
 
-        cy.get('body').then(($body) => {
-            const btnNew = $body.find('span:contains("В корзину")');
-            const btnAlready = $body.find('span:contains("В корзине")');
+         cy.get('body').then(($body) => {
 
-            if (btnNew.length > 0 && btnNew.is(':visible')) {
+            const hasAddBtn = $body.find('button:contains("В корзину")').length > 0;
+            const hasInCart = $body.find('button:contains("В корзине")').length > 0;
 
-                cy.wrap(btnNew).first().click();
+            if (hasAddBtn) {
 
-                cy.contains('li', 'Товар добавлен в корзину', {
+                cy.log('Кнопка: В корзину');
+
+                cy.get('#product-add-to-basket')
+                    .should('be.visible')
+                    .click();
+
+                cy.contains('button', 'В корзине', {
                         timeout: 20000
-                    }).first()
+                    })
                     .should('be.visible')
+                    .click();
 
-                cy.contains('span', 'В корзине').first()
+            } else if (hasInCart) {
+
+                cy.log('Кнопка: Уже в корзине');
+
+                cy.contains('button', 'В корзине')
                     .should('be.visible')
-                    .click()
+                    .click();
 
-                cy.url().should('include', '/basket')
-
-            } else if (btnAlready.length > 0 && btnAlready.is(':visible')) {
-
-                cy.wrap(btnAlready).first().click();
-
-                cy.url().should('include', '/basket')
-
-                cy.log('Нажали: В корзине');
             } else {
-                // Если вообще ничего не нашли, тест не упадет тут, 
-                // а просто выведет сообщение в лог.
-                cy.log('Ни одной кнопки не найдено, проверяем селекторы');
+
+                throw new Error('❌ Не найдена ни одна кнопка');
+
             }
         });
 
@@ -141,9 +142,8 @@ describe('Оформление заказа', () => {
 
         cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
 
-        cy.contains('button', 'Купить сейчас', {
-                timeout: 20000
-            }).first()
+        cy.get('#product-buy-now').should('be.visible')
+            .should('include.text', 'Купить сейчас')
             .click()
 
         cy.url().should('include', '/checkout')
@@ -158,9 +158,8 @@ describe('Оформление заказа', () => {
 
         cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
 
-        cy.contains('button', 'Купить сейчас', {
-                timeout: 20000
-            }).first()
+        cy.get('#product-buy-now').should('be.visible')
+            .should('include.text', 'Купить сейчас')
             .click()
 
         Checkout.step_one()
@@ -175,9 +174,8 @@ describe('Оформление заказа', () => {
 
         cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
 
-        cy.contains('button', 'Купить сейчас', {
-                timeout: 20000
-            }).first()
+        cy.get('#product-buy-now').should('be.visible')
+            .should('include.text', 'Купить сейчас')
             .click()
 
         Checkout.step_one()
@@ -193,8 +191,8 @@ describe('Оформление заказа', () => {
 
         cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
 
-        cy.contains('button', 'Купить сейчас')
-            .should('be.visible')
+        cy.get('#product-buy-now').should('be.visible')
+            .should('include.text', 'Купить сейчас')
             .click()
 
         Checkout.step_one()
@@ -213,8 +211,8 @@ describe('Оформление заказа', () => {
 
         cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
 
-        cy.contains('button', 'Купить сейчас')
-            .should('be.visible')
+        cy.get('#product-buy-now').should('be.visible')
+            .should('include.text', 'Купить сейчас')
             .click()
 
         cy.visit('/checkout')
@@ -231,8 +229,8 @@ describe('Оформление заказа', () => {
 
         cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
 
-        cy.contains('button', 'Купить сейчас')
-            .should('be.visible')
+        cy.get('#product-buy-now').should('be.visible')
+            .should('include.text', 'Купить сейчас')
             .click()
 
         Checkout.checkout_broker()
@@ -247,8 +245,8 @@ describe('Оформление заказа', () => {
 
         cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
 
-        cy.contains('button', 'Купить сейчас')
-            .should('be.visible')
+        cy.get('#product-buy-now').should('be.visible')
+            .should('include.text', 'Купить сейчас')
             .click()
 
         Checkout.checkout_pay_in_shop()
