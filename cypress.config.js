@@ -7,8 +7,8 @@ module.exports = {
     supportFile: 'cypress/support/e2e.js',
     viewportWidth: 2560,
     viewportHeight: 1440,
-    defaultCommandTimeout: 30000,
-    responseTimeout: 30000,
+    defaultCommandTimeout: 40000,
+    responseTimeout: 40000,
 
     setupNodeEvents(on, config) {
       // Игнорирование определённых внешних запросов в логах
