@@ -186,5 +186,24 @@ describe('Страница товара', () => {
 
   })
 
+  it('Проверка отображении Экспресс доставка', () => {
+
+    ProductPage.interceptRequests()
+
+    cy.visit('/product/smartfon-oppo-reno-14-5g-12512gb-opal-white/')
+
+    ProductPage.check_express_delivery()
+
+  })
+
+  it('Проверка отображения текста Эксрпресс доставки', () => {
+
+    ProductPage.interceptRequests()
+
+    cy.visit('/product/smartfon-oppo-reno-14-5g-12512gb-opal-white/')
+
+    ProductPage.check_express_delivery_text()
+
+  })
 
 })

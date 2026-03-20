@@ -374,5 +374,28 @@ class productPage {
         });
     }
 
+    check_express_delivery() {
+
+        cy.wait('@shipment', {
+            timeout: 20000
+        }).then((interception) => {
+            expect(interception.response.statusCode).to.eq(200);
+
+            const express_delivery_api_response = interception.response.body.expressDelivery;
+            expect(express_delivery_api_response).to.eq(true);
+            
+            if (express_delivery_api_response) {
+            cy.get('#product-deliveries-1').should('be.visible')
+            cy.get('#product-free-shipping').should('have.text', 'Бесплатная доставка при покупке на сумму от 10 000 ₸')
+            }
+        });
+
+    }
+
+    check_express_delivery_text(){
+
+        cy.get('#product-free-shipping').should('have.text', 'Бесплатная доставка при покупке на сумму от 10 000 ₸')
+    }
+
 }
 export default productPage;
