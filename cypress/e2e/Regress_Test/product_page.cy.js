@@ -206,4 +206,13 @@ describe('Страница товара', () => {
 
   })
 
+  it('Проверка выбора подарка', () => {
+
+    ProductPage.interceptRequests()
+
+    cy.visit('/product/kofemashina-polaris-pacm-2056ac-chernyy/')
+
+    ProductPage.check_gift_button()
+  })
+
 })

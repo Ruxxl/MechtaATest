@@ -10,6 +10,7 @@ const selectors = {
     product_chips: '#product-chips',
     product_credit: '#product-option-card-1',
     product_shops_button: '#product-shops',
+    product_gift_button: '#product-gift-button',
     //main properties
     brand_product_properties_name: '#product-characteristic-key-1',
     model_product_properties_name: '#product-characteristic-key-2',
@@ -383,18 +384,42 @@ class productPage {
 
             const express_delivery_api_response = interception.response.body.expressDelivery;
             expect(express_delivery_api_response).to.eq(true);
-            
+
             if (express_delivery_api_response) {
-            cy.get('#product-deliveries-1').should('be.visible')
-            cy.get('#product-free-shipping').should('have.text', 'Бесплатная доставка при покупке на сумму от 10 000 ₸')
+                cy.get('#product-deliveries-1').should('be.visible')
+                cy.get('#product-free-shipping').should('have.text', 'Бесплатная доставка при покупке на сумму от 10 000 ₸')
             }
         });
 
     }
 
-    check_express_delivery_text(){
+    check_express_delivery_text() {
 
         cy.get('#product-free-shipping').should('have.text', 'Бесплатная доставка при покупке на сумму от 10 000 ₸')
+    }
+
+    check_gift_button() {
+
+        cy.wait('@product_offers', {timeout: 20000}).then((interception) => {
+            expect(interception.response.statusCode).to.eq(200);
+
+            // Достаем внутренний массив (первый элемент массива gifts)
+            const gifts_items = interception.response.body.gifts[0];
+
+            // Проверяем, что массив не пустой, прежде чем идти дальше
+            expect(gifts_items).to.be.an('array').and.not.be.empty;
+
+            cy.get(selectors.product_gift_button).should('be.visible').click();
+
+            gifts_items.forEach((gift) => {
+                // Логируем для отладки, если вдруг тест упадет (увидите в консоли Cypress)
+                cy.log(`Checking gift: ${gift.name}`);
+
+                // Ищем текст подарка в теге span на странице
+                cy.contains('span', gift.name)
+                    .should('be.visible');
+            });
+        });
     }
 
 }

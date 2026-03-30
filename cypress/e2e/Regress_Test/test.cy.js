@@ -20,9 +20,9 @@ describe('Тестовый файл', () => {
 
         ProductPage.interceptRequests()
 
-        cy.visit('/product/smartfon-oppo-reno-14-5g-12512gb-opal-white/')
+        cy.visit('/product/kofemashina-polaris-pacm-2056ac-chernyy/')
 
-        ProductPage.check_express_delivery()
+        ProductPage.check_gift_button()
 
     })
 
