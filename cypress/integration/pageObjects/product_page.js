@@ -373,6 +373,8 @@ class productPage {
                 cy.contains(addr).should('be.visible');
             });
         });
+        
+        cy.get('#product-free-shipping').should('have.text', 'Бесплатная доставка при покупке на сумму от 10 000 ₸')
     }
 
     check_express_delivery() {
