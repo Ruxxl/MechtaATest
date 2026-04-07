@@ -120,12 +120,29 @@ class checkout {
 
     step_two_delivery() {
 
+        const address_value = 'Кенесары 40'
+        const free_delivery_astana = 'Бесплатная доставка по г.Астана'
+
         cy.wait(1000)
         // 1. Перехватываем данные из API
 
         cy.get('input[name="address"]').should('be.visible').click();
 
-        cy.contains('p', 'Кенесары 40').first().should('be.visible').click();
+        cy.contains('p', address_value).first().should('be.visible').click();
+
+        cy.get('#v-0-4-0-3').should('be.visible').click();
+
+        cy.contains('Бесплатная доставка по г.Астана ').click()
+
+        cy.get('#v-0-4-0-3').find('span').should('contain', free_delivery_astana);
+
+        cy.contains('button', 'Привезти сюда').should('be.visible').click();
+
+        cy.get('input[name="address"]').should('have.value', 'улица Кенесары  40');
+
+        cy.contains('h3', 'Дата доставки').should('be.visible').should('have.text', 'Дата доставки');
+
+        cy.get('#delivery-button_desktop').should('be.visible').click();
 
     }
 
@@ -187,7 +204,29 @@ class checkout {
 
         cy.get('#person-button_desktop').should('be.exist').click();
 
-        this.step_two()
+        const address_value = 'Кенесары 40'
+        const free_delivery_astana = 'Бесплатная доставка по г.Астана'
+
+        cy.wait(1000)
+        // 1. Перехватываем данные из API
+
+        cy.get('input[name="address"]').should('be.visible').click();
+
+        cy.contains('p', address_value).first().should('be.visible').click();
+
+        cy.get('#v-0-2-0-3').should('be.visible').click();
+
+        cy.contains('Бесплатная доставка по г.Астана ').click()
+
+        cy.get('#v-0-2-0-3').find('span').should('contain', free_delivery_astana);
+
+        cy.contains('button', 'Привезти сюда').should('be.visible').click();
+
+        cy.get('input[name="address"]').should('have.value', 'улица Кенесары  40');
+
+        cy.contains('h3', 'Дата доставки').should('be.visible').should('have.text', 'Дата доставки');
+
+        cy.get('#delivery-button_desktop').should('be.visible').click();
 
         cy.wait('@get_checkout').then(({
             response
@@ -230,9 +269,7 @@ class checkout {
 
         cy.get('#person-button_desktop').should('be.exist').click();
 
-        this.step_two()
-
-
+        this.step_two_delivery()
 
         cy.wait('@get_checkout').then(({
             response
@@ -301,11 +338,11 @@ class checkout {
 
     }
 
-    checkout_pay_in_shop() {
+    checkout_pay_cash_courier() {
 
         cy.get('#person-button_desktop').should('be.exist').click();
 
-        this.step_two()
+        this.step_two_delivery()
 
         cy.wait('@get_checkout').then(({
             response
@@ -314,11 +351,19 @@ class checkout {
 
             const payment_type_payShop = response.body.data.payment_info.variants[3].name;
 
-            cy.log(payment_type_payShop)
+            // Находим нужный объект в массиве по его имени
+            const cashVariant = response.body.data.payment_info.variants.find(
+                v => v.name === "Наличными курьеру"
+            );
+
+            // Извлекаем имя (или ID, что обычно полезнее для тестов)
+            const paymentTypeName = cashVariant?.name;
+
+            cy.log(paymentTypeName)
 
             cy.intercept('GET', '**/api/v2/checkout*').as('checkoutQuery');
 
-            cy.contains('h4', payment_type_payShop).should('be.visible').click();
+            cy.contains('h4', paymentTypeName).should('be.visible').click();
         })
 
         cy.wait('@checkoutQuery').then((interception) => {
@@ -329,7 +374,7 @@ class checkout {
             const paymentInfo = JSON.parse(query.payment_info);
 
             // Сама проверка
-            expect(paymentInfo.payment_id).to.equal(1);
+            expect(paymentInfo.payment_id).to.equal(2);
 
             // Проверка person_type (он идет отдельным параметром)
             expect(query.person_type).to.eq('1');

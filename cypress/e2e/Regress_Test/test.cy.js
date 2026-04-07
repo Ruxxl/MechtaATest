@@ -18,11 +18,17 @@ describe('Тестовый файл', () => {
 
     it('Тестовый сценарии', () => {
 
-        ProductPage.interceptRequests()
+        Checkout.request_intercept()
 
-        cy.visit('/product/kofemashina-polaris-pacm-2056ac-chernyy/')
+        cy.login()
 
-        ProductPage.check_gift_button()
+        cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+
+        cy.get('#product-buy-now').should('be.visible')
+            .should('include.text', 'Купить сейчас')
+            .click()
+
+        Checkout.checkout_pay_cash_courier()
 
     })
 

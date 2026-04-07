@@ -180,7 +180,7 @@ describe('Оформление заказа', () => {
 
         Checkout.step_one()
 
-        Checkout.step_two()
+        Checkout.step_two_delivery()
     })
 
     it('Третий шаг оформление заказа', () => {
@@ -197,7 +197,7 @@ describe('Оформление заказа', () => {
 
         Checkout.step_one()
 
-        Checkout.step_two()
+        Checkout.step_two_delivery()
 
         Checkout.step_three()
 
@@ -237,7 +237,7 @@ describe('Оформление заказа', () => {
 
     })
 
-    it('Оформление заказа "Оплата в магазине"', () => {
+    it('Оформление заказа "Наличными курьеру"', () => {
 
         Checkout.request_intercept()
 
@@ -249,7 +249,7 @@ describe('Оформление заказа', () => {
             .should('include.text', 'Купить сейчас')
             .click()
 
-        Checkout.checkout_pay_in_shop()
+        Checkout.checkout_pay_cash_courier()
 
     })
 
