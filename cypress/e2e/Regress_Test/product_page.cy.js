@@ -2,6 +2,8 @@ import productPage from '../../integration/pageObjects/product_page';
 
 const ProductPage = new productPage()
 
+const product_page = '/product/smartfon-apple-iphone-16-pro-max-256gb-desert-titanium/'
+
 describe('Страница товара', () => {
   beforeEach(() => {
     cy.session('base-home', () => {
@@ -11,9 +13,9 @@ describe('Страница товара', () => {
 
   it('Открывает страницу товара', () => {
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
-    cy.url().should('include', 'product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium')
+    cy.url().should('include', product_page)
 
     cy.get('#product-add-to-basket').should('be.visible')
       .should('include.text', 'В корзину')
@@ -24,7 +26,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     ProductPage.wait_requests()
 
@@ -34,7 +36,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     ProductPage.check_product_name()
 
@@ -44,7 +46,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     ProductPage.check_official_product_sticker()
 
@@ -54,7 +56,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     ProductPage.check_discount_product_sticker()
 
@@ -64,7 +66,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     ProductPage.check_productName_copy_button()
 
@@ -74,7 +76,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     ProductPage.check_reviews()
 
@@ -84,7 +86,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     ProductPage.check_main_properties()
 
@@ -94,7 +96,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     ProductPage.check_only_shop_sticker()
 
@@ -104,7 +106,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     ProductPage.check_product_finalPrice()
 
@@ -114,7 +116,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     ProductPage.check_product_basePrice()
 
@@ -124,7 +126,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     ProductPage.check_product_fishki()
 
@@ -132,7 +134,7 @@ describe('Страница товара', () => {
 
   it('Проверка наличия кнопки "Купить сейчас"', () => {
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     cy.get('#product-buy-now').should('be.visible')
       .should('include.text', 'Купить сейчас')
@@ -141,7 +143,7 @@ describe('Страница товара', () => {
 
   it('Проверка наличия кнопки "В корзину"', () => {
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     cy.get('#product-add-to-basket').should('be.visible')
       .should('include.text', 'В корзину')
@@ -150,7 +152,7 @@ describe('Страница товара', () => {
 
   it('Проверка кнопки "Все характеристики"', () => {
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     ProductPage.check_vse_charakteristiki()
 
@@ -160,7 +162,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     ProductPage.check_product_credit_value()
 
@@ -170,7 +172,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     ProductPage.check_shops_button()
 
@@ -180,7 +182,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+    cy.visit(product_page)
 
     ProductPage.check_only_shop_adresses()
 
@@ -190,7 +192,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-oppo-reno-14-5g-12512gb-opal-white/')
+    cy.visit(product_page)
 
     ProductPage.check_express_delivery()
 
@@ -200,7 +202,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/smartfon-oppo-reno-14-5g-12512gb-opal-white/')
+    cy.visit(product_page)
 
     ProductPage.check_express_delivery_text()
 
@@ -210,7 +212,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit('/product/kofemashina-polaris-pacm-2056ac-chernyy/')
+    cy.visit(product_page)
 
     ProductPage.check_gift_button()
   })

@@ -8,6 +8,8 @@ const Add_basket = new add_basket();
 
 const Checkout = new checkout();
 
+const product_page = '/product/smartfon-apple-iphone-17-pro-max-256gb-cosmic-orange/'
+
 describe('Тестовый файл', () => {
     beforeEach(() => {
         cy.session('base-home', () => {
@@ -18,17 +20,7 @@ describe('Тестовый файл', () => {
 
     it('Тестовый сценарии', () => {
 
-        Checkout.request_intercept()
-
-        cy.login()
-
-        cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
-
-        cy.get('#product-buy-now').should('be.visible')
-            .should('include.text', 'Купить сейчас')
-            .click()
-
-        Checkout.checkout_pay_cash_courier()
+        cy.visit(product_page);
 
     })
 
