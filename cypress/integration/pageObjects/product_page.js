@@ -182,7 +182,7 @@ class productPage {
             uiSelectors.forEach((selector, index) => {
                 const apiProperty = mainPropertiesApi[index];
 
-                // 🔹 Проверка name
+                // Проверка name
                 cy.get(selector.key)
                     .should('be.visible')
                     .invoke('text')
@@ -190,7 +190,7 @@ class productPage {
                         expect(text.trim()).to.eq(apiProperty.name);
                     });
 
-                // 🔹 Проверка value
+                // Проверка value
                 cy.get(selector.value)
                     .should('be.visible')
                     .invoke('text')
