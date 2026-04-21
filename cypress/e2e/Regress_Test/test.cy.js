@@ -1,14 +1,6 @@
-import checkout from "../../integration/pageObjects/checkout";
-import add_basket from "../../integration/pageObjects/add_basket";
-import productPage from "../../integration/pageObjects/product_page";
+import Home_page from '../../integration/pageObjects/home_page';
 
-const ProductPage = new productPage()
-
-const Add_basket = new add_basket();
-
-const Checkout = new checkout();
-
-const product_page = '/product/smartfon-apple-iphone-17-pro-max-256gb-cosmic-orange/'
+const home_page = new Home_page();
 
 describe('Тестовый файл', () => {
     beforeEach(() => {
@@ -20,7 +12,11 @@ describe('Тестовый файл', () => {
 
     it('Тестовый сценарии', () => {
 
-        cy.visit(product_page);
+        home_page.interceptRequests() // перехватываем запросы ДО visit
+
+        cy.visit('/')
+
+        home_page.popularCategories
 
     })
 

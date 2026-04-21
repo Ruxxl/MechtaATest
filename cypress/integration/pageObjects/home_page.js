@@ -1,93 +1,97 @@
 class HomePage {
     constructor() {
-        // Сюда можно сохранять алиасы, если нужно
-        this.aliases = [
-            'seoResolve', 'headerInfo', 'headerCities', 'basket', 'favorites', 'user',
-            'catalogMenu', 'popularTop', 'popularCategories', 'banners', 'recommendations',
-            'history', 'catalogOffers', 'catalogMeta', 'compareSmall'
-        ]
+        // Объект конфигурации: алиас -> эндпоинт
+        this.endpoints = {
+            seoResolve: ['POST', '**/api/seo-resolve'],
+            headerInfo: ['GET', '**/api/v2/header/info'],
+            headerCities: ['GET', '**/api/v2/header/cities'],
+            basket: ['GET', '**/api/v2/basket'],
+            favorites: ['GET', '**/api/v2/favorites'],
+            user: ['GET', '**/api/v2/user'],
+            catalogMenu: ['GET', '**/api/v3/catalog/menu'],
+            popularTop: ['GET', '**/api/v3/popular/top-categories**'],
+            popularCategories: ['GET', '**/api/v3/popular/categories'],
+            banners: ['GET', '**/api/v3/publications/banners'],
+            recommendations: ['GET', '**/api/v3/personal/recommendations'],
+            history: ['GET', '**/api/v3/personal/history'],
+            catalogOffers: ['GET', '**/api/v3/catalog/offers**'],
+            catalogMeta: ['GET', '**/api/v3/catalog/meta**'],
+            compareSmall: ['GET', '**/api/v2/compare/small']        };
+
+        this.importantLinks = ['/mechta-shops/', 'https://b2b.mechta.kz/', '/faq/'];
     }
 
-    // Метод для перехвата всех ключевых API
+    // 1. Динамический интерцепт
     interceptRequests() {
-        cy.intercept('POST', '**/api/seo-resolve').as('seoResolve')
-        cy.intercept('GET', '**/api/v2/header/info').as('headerInfo')
-        cy.intercept('GET', '**/api/v2/header/cities').as('headerCities')
-        cy.intercept('GET', '**/api/v2/basket').as('basket')
-        cy.intercept('GET', '**/api/v2/favorites').as('favorites')
-        cy.intercept('GET', '**/api/v2/user').as('user')
-        cy.intercept('GET', '**/api/v3/catalog/menu').as('catalogMenu')
-        cy.intercept('GET', '**/api/v3/popular/top-categories**').as('popularTop')
-        cy.intercept('GET', '**/api/v3/popular/categories').as('popularCategories')
-        cy.intercept('GET', '**/api/v3/publications/banners').as('banners')
-        cy.intercept('GET', '**/api/v3/personal/recommendations').as('recommendations')
-        cy.intercept('GET', '**/api/v3/personal/history').as('history')
-        cy.intercept('GET', '**/api/v3/catalog/offers**').as('catalogOffers')
-        cy.intercept('GET', '**/api/v3/catalog/meta**').as('catalogMeta')
-        cy.intercept('GET', '**/api/v2/compare/small').as('compareSmall')
+        Object.entries(this.endpoints).forEach(([alias, [method, path]]) => {
+            cy.intercept(method, path).as(alias);
+        });
     }
-    // Метод проверки всех запросов
+
+    // 2. Оптимизированная проверка всех запросов
+    // Убрали cy.wait(10000). Cypress сам подождет появления запросов.
     checkRequests() {
-        cy.wait(10000)
-        this.aliases.forEach(alias => {
-            cy.wait(`@${alias}`).then(interception => {
-                const status = interception.response?.statusCode
-                // 401 допустимо для user, 204 для history, остальные 200
-                if (alias === 'user') {
-                    expect(status).to.be.oneOf([200, 401])
-                } else if (alias === 'history') {
-                    expect(status).to.be.oneOf([200, 204])
-                } else {
-                    expect(status).to.eq(200)
+        Object.keys(this.endpoints).forEach(alias => {
+            cy.wait(`@${alias}`, { timeout: 15000 }).then(({ response }) => {
+                const status = response?.statusCode;
+                
+                // Используем switch для гибкой логики статусов
+                switch (alias) {
+                    case 'user':
+                        expect(status).to.be.oneOf([200, 401]);
+                        break;
+                    case 'history':
+                        expect(status).to.be.oneOf([200, 204]);
+                        break;
+                    default:
+                        expect(status).to.eq(200);
                 }
-                cy.log(`${alias}: ${status}`)
-            })
-        })
+                cy.log(`✅ ${alias}: ${status}`);
+            });
+        });
     }
 
-    get popularCategoriesLinks() {
-        return [
-            'https://www.mechta.kz/useful/shares/',
-            'https://www.mechta.kz/section/smartfony/apple-iphone/',
-            'https://www.mechta.kz/section/smartfony/',
-            'https://www.mechta.kz/section/naushniki/',
-            'https://www.mechta.kz/section/noutbuki/',
-            'https://www.mechta.kz/section/uborka-doma/',
-            'https://www.mechta.kz/section/stiralnye-mashiny/',
-            'https://www.mechta.kz/section/televizory/',
-            'https://mechta.kz/section/aerogrili',
-            'https://www.mechta.kz/section/holodilniki/',
-            'https://www.mechta.kz/section/elektricheskie-chayniki',
-            'https://mechta.kz/section/planshety'
-        ]
+    // 3. Проверка популярных категорий (переделано в метод)
+    checkPopularCategories() {
+        return cy.wait('@popularCategories').then(({ response }) => {
+            const categories = response.body;
+
+            categories.forEach((item) => {
+                const urlPath = new URL(item.url).pathname;
+                
+                // Ищем ссылку, которая содержит путь и текст категории
+                cy.get(`a[href*="${urlPath}"]`)
+                    .should('be.visible')
+                    .and(($a) => {
+                        const content = ($a.attr('aria-label') || $a.text()).toLowerCase();
+                        expect(content).to.contain(item.title.toLowerCase());
+                    });
+            });
+        });
     }
 
-    // Геттер, который проверяет видимость всех ссылок
-    get popularCategories() {
-        cy.wait(10000)
-        this.popularCategoriesLinks.forEach(link => {
-            cy.get(`[href="${link}"]`).should('be.visible')
-        })
+    // 4. Проверка брендов
+    checkPopularBrands() {
+
+        return cy.wait('@brands').then(({ response }) => {
+            response.body.forEach((brand) => {
+                cy.get(`a[href*="/brands/${brand.slug}"]`)
+                    .should('be.visible')
+                    .and('attr', 'aria-label', `Visit ${brand.name}`);
+            });
+        });
     }
 
-    get Header(){
-        return cy.get('#reka-popover-trigger-v-0-0-0').should('be.visible')
+    // 5. Простые элементы и ссылки
+    get header() {
+        return cy.get('#reka-popover-trigger-v-0-0-0');
     }
 
-    get importantLinks() {
-        return [
-            '/mechta-shops/',
-            'https://b2b.mechta.kz/',
-            '/faq/'
-        ]
-    }
-
-    // Метод для проверки видимости всех ссылок
     checkImportantLinksVisible() {
         this.importantLinks.forEach(link => {
-            cy.get(`[href="${link}"]`).should('be.visible')
-        })
+            cy.get(`a[href="${link}"]`).should('be.visible');
+        });
     }
 }
 
-export default HomePage
+export default new HomePage(); // Экспортируем экземпляр для удобства

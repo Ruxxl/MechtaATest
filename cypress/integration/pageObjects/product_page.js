@@ -194,6 +194,7 @@ class productPage {
                 cy.get(selector.value)
                     .should('be.visible')
                     .invoke('text')
+                    .should('not.be.empty')
                     .then((text) => {
                         const uiValue = text.replace(/\u00a0/g, ' ').trim();
                         const apiValue = apiProperty.value.replace(/\u00a0/g, ' ').trim();
