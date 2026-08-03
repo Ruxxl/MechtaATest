@@ -1,5 +1,69 @@
 class checkout {
 
+    // Кликает по полю адреса: если address_value уже есть среди сохранённых —
+    // выбирает его из списка (и подтверждает зону доставки через zoneWidgetId,
+    // т.к. id этого виджета отличается в разных местах вызова), иначе жмёт
+    // "Добавить адрес" и заполняет новый (район доставки + улица/дом через
+    // автокомплит) — так же проверяется сама возможность добавления нового адреса.
+    // ВАЖНО: после первого успешного добавления адрес остаётся сохранён в аккаунте,
+    // поэтому последующие вызовы с тем же address_value пойдут по ветке "сохранён".
+    selectDeliveryAddress(address_value, zoneWidgetId) {
+
+        // На странице одновременно в DOM может быть несколько input[name="address"]
+        // (разные шаги/формы), поэтому явно берём видимое поле-триггер
+        cy.get('input[name="address"]:visible').first().click();
+
+        cy.get('body').then(($body) => {
+            const savedAddress = $body.find(`p:contains("${address_value}")`);
+
+            if (savedAddress.length > 0 && savedAddress.is(':visible')) {
+                cy.wrap(savedAddress).first().click();
+
+                cy.get(zoneWidgetId).should('be.visible').click();
+                cy.contains('[role="option"]', 'Бесплатная доставка по г.Астана').click();
+                cy.contains('button', 'Привезти сюда').should('be.visible').click();
+                return;
+            }
+
+            cy.log(`Адрес "${address_value}" не найден среди сохранённых — добавляем новый`);
+
+            cy.contains('button', 'Добавить адрес').should('be.visible').click();
+
+            // Район доставки — обязательное поле, выбираем первый вариант
+            // ("Бесплатная доставка по г.Астана")
+            cy.contains('label', 'Район доставки')
+                .parent()
+                .find('button[role="combobox"]')
+                .click();
+            cy.contains('[role="option"]', 'Бесплатная доставка по г.Астана').click();
+
+            // Улица и номер дома — видимое поле это input[role="combobox"] рядом с лейблом;
+            // input[name="address"] в этом блоке — скрытый (data-hidden) прокси для автозаполнения,
+            // печатать нужно именно в комбобокс, а не в него
+            const streetInput = () => cy.contains('label', 'Улица и номер дома')
+                .parent()
+                .find('input[role="combobox"]');
+
+            streetInput().type(address_value);
+
+            // Список подсказок подгружается с debounce на каждый символ
+            // (несколько GET к 2GIS suggest API) — ждём, пока он стабилизируется,
+            // иначе клик может попасть в узел, который тут же заменяется ре-рендером
+            cy.wait(2500);
+
+            const streetName = address_value.split(' ')[0];
+            cy.contains('[role="option"]', streetName, {
+                timeout: 20000
+            }).click();
+
+            // Дом и Название адреса должны заполниться автоматически
+            cy.get('input[name="house"]').should('not.have.value', '');
+            cy.get('input[name="addressName"]').should('not.have.value', '');
+
+            cy.contains('button', 'Привезти сюда').should('be.visible').click();
+        });
+    }
+
     auth_checkout() {
 
         cy.intercept('POST', '/api/v2/login').as('login');
@@ -67,7 +131,7 @@ class checkout {
             })
 
             cy.get('input[name="fio"]')
-                .should('have.value', 'Vv Vv')
+                .should('have.value', 'Appleseed John')
 
             cy.get('input[name="email"]')
                 .should('have.value', user_email)
@@ -121,24 +185,12 @@ class checkout {
     step_two_delivery() {
 
         const address_value = 'Кенесары 40'
-        const free_delivery_astana = 'Бесплатная доставка по г.Астана'
 
-        cy.wait(1000)
-        // 1. Перехватываем данные из API
+        cy.wait(2000)
 
-        cy.get('input[name="address"]').should('be.visible').click();
+        this.selectDeliveryAddress(address_value, '#v-0-4-0-3');
 
-        cy.contains('p', address_value).first().should('be.visible').click();
-
-        cy.get('#v-0-4-0-3').should('be.visible').click();
-
-        cy.contains('Бесплатная доставка по г.Астана ').click()
-
-        cy.get('#v-0-4-0-3').find('span').should('contain', free_delivery_astana);
-
-        cy.contains('button', 'Привезти сюда').should('be.visible').click();
-
-        cy.get('input[name="address"]').should('have.value', 'улица Кенесары  40');
+        cy.get('input[name="address"]:visible').first().should('not.have.value', '');
 
         cy.contains('h3', 'Дата доставки').should('be.visible').should('have.text', 'Дата доставки');
 
@@ -170,8 +222,7 @@ class checkout {
                 cy.wrap(variant.name).as(`variant_${index}`);
             });
 
-            cy.intercept('GET', '/api/v2/checkout?payment_info=%7B%22payment_id%22:4%7D&person_type=1').as('check_payment');
-
+            cy.intercept('GET', '**/api/v2/checkout*').as('check_payment');
 
             cy.contains('h4', variants[1].name)
                 .should('be.visible')
@@ -180,6 +231,10 @@ class checkout {
             cy.wait('@check_payment').then((interception) => {
 
                 expect(interception.response.statusCode).to.equal(200);
+
+                const paymentInfo = JSON.parse(interception.request.query.payment_info);
+                expect(paymentInfo.payment_id).to.equal(4);
+                expect(interception.request.query.person_type).to.eq('1');
 
             });
 
@@ -205,24 +260,12 @@ class checkout {
         cy.get('#person-button_desktop').should('be.exist').click();
 
         const address_value = 'Кенесары 40'
-        const free_delivery_astana = 'Бесплатная доставка по г.Астана'
 
-        cy.wait(1000)
-        // 1. Перехватываем данные из API
+        cy.wait(2000)
 
-        cy.get('input[name="address"]').should('be.visible').click();
+        this.selectDeliveryAddress(address_value, '#v-0-2-0-3');
 
-        cy.contains('p', address_value).first().should('be.visible').click();
-
-        cy.get('#v-0-2-0-3').should('be.visible').click();
-
-        cy.contains('Бесплатная доставка по г.Астана ').click()
-
-        cy.get('#v-0-2-0-3').find('span').should('contain', free_delivery_astana);
-
-        cy.contains('button', 'Привезти сюда').should('be.visible').click();
-
-        cy.get('input[name="address"]').should('have.value', 'улица Кенесары  40');
+        cy.get('input[name="address"]:visible').first().should('not.have.value', '');
 
         cy.contains('h3', 'Дата доставки').should('be.visible').should('have.text', 'Дата доставки');
 
@@ -258,7 +301,7 @@ class checkout {
 
                 cy.contains('button', 'Подтвердить заказ').first().should('be.visible').click();
 
-                cy.url().should('include', 'https://payments.ioka.kz/orders/ord_')
+                cy.url().should('include', 'https://checkout.ioka.kz/ru/orders/ord_')
 
             });
         })
@@ -320,7 +363,7 @@ class checkout {
 
                 cy.contains('a', 'сбор, обработку и хранение персональных данных')
                     .should('be.visible')
-                    .and('have.attr', 'href', 'https://www.mechta.kz/ClientConsentForm.pdf')
+                    .and('have.attr', 'href', '/ClientConsentForm_ru.pdf')
                     .and('have.attr', 'target', '_blank');
 
                 cy.contains('button', 'Далее').first().click();

@@ -31,10 +31,26 @@ class HomePage {
     // 2. Оптимизированная проверка всех запросов
     // Убрали cy.wait(10000). Cypress сам подождет появления запросов.
     checkRequests() {
+        // Для анонимной сессии (без cy.login()) бэкенд вообще не шлёт этот запрос,
+        // поэтому его нельзя ждать наравне с остальными — cy.wait упадёт по таймауту
+        const optionalForAnonymous = ['favorites'];
+
         Object.keys(this.endpoints).forEach(alias => {
+            if (optionalForAnonymous.includes(alias)) {
+                cy.get(`@${alias}.all`, { timeout: 15000 }).then((interceptions) => {
+                    if (interceptions.length === 0) {
+                        cy.log(`ℹ️ ${alias}: запрос не отправлен (ожидаемо для анонимной сессии)`);
+                        return;
+                    }
+                    expect(interceptions[0].response?.statusCode).to.eq(200);
+                    cy.log(`✅ ${alias}: ${interceptions[0].response?.statusCode}`);
+                });
+                return;
+            }
+
             cy.wait(`@${alias}`, { timeout: 15000 }).then(({ response }) => {
                 const status = response?.statusCode;
-                
+
                 // Используем switch для гибкой логики статусов
                 switch (alias) {
                     case 'user':
@@ -94,4 +110,4 @@ class HomePage {
     }
 }
 
-export default new HomePage(); // Экспортируем экземпляр для удобства
+export default HomePage;

@@ -9,7 +9,6 @@ class add_basket {
     }
 
     getProduct() {
-        cy.wait(5000)
         cy.wait('@getProduct').then((interception) => {
             this.numericId = interception.response.body.numericId;
             cy.log(`Product ID: ${this.numericId}`);

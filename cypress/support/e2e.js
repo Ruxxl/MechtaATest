@@ -1,7 +1,5 @@
 import './commands';
 
-require('cypress-xpath');
-
 // Список всех доменов и эндпоинтов для перехвата
 const interceptedDomains = [
     // Google Analytics
@@ -43,9 +41,6 @@ beforeEach(() => {
         },
         {
             log: false, // Отключаем логирование
-            onRequest(req) {
-                console.log('Intercepted request:', req); // Проверяем, перехвачен ли запрос
-            }
         }
     );
 
@@ -57,9 +52,10 @@ beforeEach(() => {
             err.message.includes("Cannot read properties of undefined (reading 'status')") ||
             err.message.includes("Cannot read properties of undefined (reading 'add')") ||
             err.message.includes("Cannot read properties of undefined (reading 'app')") ||
-            err.message.includes("Cannot read properties of undefined (reading 'app')") ||
             err.message.includes("VK is not defined") ||
-            err.message.includes("Cannot read properties of null (reading 'document')") // Ошибки null
+            err.message.includes("Cannot read properties of null (reading 'document')") || // Ошибки null
+            err.message.includes('ResizeObserver loop completed with undelivered notifications') || // Безобидное предупреждение карты (2GIS)
+            err.message.includes('Tracker not initialized') // Mindbox падает сам на себя из-за наших же перехватов его запросов
         ) {
             return false; // Не прерывать тест
         }

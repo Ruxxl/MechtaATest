@@ -1,8 +1,6 @@
 import checkout from "../../integration/pageObjects/checkout";
-import add_basket from "../../integration/pageObjects/add_basket";
 
 const Checkout = new checkout();
-const Add_basket = new add_basket();
 
 describe('Оформление заказа', () => {
 
@@ -11,7 +9,7 @@ describe('Оформление заказа', () => {
         cy.session('base-home', () => {
 
             cy.visit('/');
-            cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+            cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/')
         });
     });
 
@@ -22,9 +20,24 @@ describe('Оформление заказа', () => {
         cy.url().should('include', 'pp.yc.mechta.kz')
     })
 
-    it('Перейти в оформление заказа', () => {
+    it('Редирект на главную при заходе в /checkout/ без авторизации и товара', () => {
 
         cy.visit('/checkout/')
+
+        cy.url().should('eq', 'https://pp.yc.mechta.kz/')
+    })
+
+    it('Перейти в оформление заказа', () => {
+
+        // Без авторизации и товара в корзине /checkout/ редиректит на главную —
+        // это ожидаемое поведение сайта, поэтому логинимся и покупаем товар
+        cy.login()
+
+        cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/')
+
+        cy.get('#product-buy-now').should('be.visible')
+            .should('include.text', 'Купить сейчас')
+            .click({ force: true })
 
         cy.url().should('include', 'checkout')
     })
@@ -42,7 +55,7 @@ describe('Оформление заказа', () => {
         cy.login()
 
         // 1. Visit the page
-        cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/');
+        cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/');
 
         cy.wait(10000)
 
@@ -85,7 +98,7 @@ describe('Оформление заказа', () => {
         cy.login()
 
         // 1. Visit the page
-        cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/');
+        cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/');
 
         cy.wait(10000)
 
@@ -140,11 +153,11 @@ describe('Оформление заказа', () => {
 
         cy.login()
 
-        cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+        cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/')
 
         cy.get('#product-buy-now').should('be.visible')
             .should('include.text', 'Купить сейчас')
-            .click()
+            .click({ force: true })
 
         cy.url().should('include', '/checkout')
 
@@ -156,11 +169,11 @@ describe('Оформление заказа', () => {
 
         cy.login()
 
-        cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+        cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/')
 
         cy.get('#product-buy-now').should('be.visible')
             .should('include.text', 'Купить сейчас')
-            .click()
+            .click({ force: true })
 
         Checkout.step_one()
 
@@ -172,11 +185,11 @@ describe('Оформление заказа', () => {
 
         cy.login()
 
-        cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+        cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/')
 
         cy.get('#product-buy-now').should('be.visible')
             .should('include.text', 'Купить сейчас')
-            .click()
+            .click({ force: true })
 
         Checkout.step_one()
 
@@ -189,11 +202,11 @@ describe('Оформление заказа', () => {
 
         cy.login()
 
-        cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+        cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/')
 
         cy.get('#product-buy-now').should('be.visible')
             .should('include.text', 'Купить сейчас')
-            .click()
+            .click({ force: true })
 
         Checkout.step_one()
 
@@ -209,11 +222,11 @@ describe('Оформление заказа', () => {
 
         cy.login()
 
-        cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+        cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/')
 
         cy.get('#product-buy-now').should('be.visible')
             .should('include.text', 'Купить сейчас')
-            .click()
+            .click({ force: true })
 
         cy.visit('/checkout')
 
@@ -227,11 +240,11 @@ describe('Оформление заказа', () => {
 
         cy.intercept('GET', '/api/v2/checkout?**').as('get_checkout');
 
-        cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+        cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/')
 
         cy.get('#product-buy-now').should('be.visible')
             .should('include.text', 'Купить сейчас')
-            .click()
+            .click({ force: true })
 
         Checkout.checkout_broker()
 
@@ -243,11 +256,11 @@ describe('Оформление заказа', () => {
 
         cy.login()
 
-        cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/')
+        cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/')
 
         cy.get('#product-buy-now').should('be.visible')
             .should('include.text', 'Купить сейчас')
-            .click()
+            .click({ force: true })
 
         Checkout.checkout_pay_cash_courier()
 

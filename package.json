@@ -1,5 +1,12 @@
 {
+  "name": "mechtaatest",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "cypress:open": "cypress open",
+    "test": "cypress run"
+  },
   "devDependencies": {
-    "cypress-xpath": "^2.0.1"
+    "cypress": "^15.19.0"
   }
 }

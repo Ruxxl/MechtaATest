@@ -23,9 +23,11 @@ describe('Добавление товара в корзину', () => {
 
     cy.login()
 
-    cy.visit('/product/smartfon-apple-iphone-16-pro-max-256gb-natural-titanium/');
+    cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/');
 
     cy.wait(10000)
+
+    cy.dismissPromoModal();
 
     cy.get('body').then(($body) => {
 
@@ -36,9 +38,15 @@ describe('Добавление товара в корзину', () => {
 
         cy.log('Кнопка: В корзину');
 
-        cy.get('#product-add-to-basket')
-          .should('be.visible')
-          .click();
+        // {force: true}: промо-модалка (подписка на уведомления) может выскочить
+        // асинхронно уже после проверки dismissPromoModal и перекрыть кнопку своим
+        // оверлеем — из-за него даже .should('be.visible') считает кнопку невидимой,
+        // поэтому не проверяем видимость, а сразу кликаем с force
+        cy.get('#product-add-to-basket').click({
+          force: true
+        });
+
+        cy.dismissAccessoryUpsell();
 
         cy.contains('button', 'В корзине', {
             timeout: 20000

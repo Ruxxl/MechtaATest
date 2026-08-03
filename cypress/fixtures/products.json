@@ -1,0 +1,18 @@
+{
+  "inStock": {
+    "url": "/product/smartfon-apple-iphone-15-128gb-pink/",
+    "note": "В наличии, есть 'В корзину'/'Купить сейчас', самовывоз, доставка. Без скидки, без отзывов, без подарка — не использовать для check_discount_product_sticker / check_reviews / check_product_basePrice / check_express_delivery / check_gift_button."
+  },
+  "withReviews": {
+    "url": "/product/naushniki-apple-airpods-4-mxp63zea/",
+    "note": "Подтверждено 03.08.2026: есть #product-review-count, #product-add-to-basket, #product-deliveries-1. Без скидки и без подарка."
+  },
+  "withGift": {
+    "url": "/product/smartfon-infinix-hot-60-pro-256plus8-jungle-breath/",
+    "note": "Подтверждено скриншотом от автора 03.08.2026: блок 'Выберите подарок' + кнопка 'Выбрать' на странице, gifts[] в ответе /api/v3/product/*/offers не пустой."
+  },
+  "withDiscount": {
+    "url": "/product/holodilnik-midea-mdrm-691mie46/",
+    "note": "Подтверждено 03.08.2026: цена со скидкой -11% (619990 -> 549990), базовая и финальная цена различаются."
+  }
+}

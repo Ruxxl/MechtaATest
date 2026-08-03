@@ -2,9 +2,23 @@ import productPage from '../../integration/pageObjects/product_page';
 
 const ProductPage = new productPage()
 
-const product_page = '/product/smartfon-apple-iphone-16-pro-max-256gb-desert-titanium/'
+// Товары-фикстуры берутся из cypress/fixtures/products.json,
+// чтобы при смене наличия/акций на сайте достаточно было поправить один файл
+let product_page;
+let product_page_with_reviews;
+let product_page_with_gift;
+let product_page_with_discount;
 
 describe('Страница товара', () => {
+  before(() => {
+    cy.fixture('products').then((products) => {
+      product_page = products.inStock.url;
+      product_page_with_reviews = products.withReviews.url;
+      product_page_with_gift = products.withGift.url;
+      product_page_with_discount = products.withDiscount.url;
+    });
+  });
+
   beforeEach(() => {
     cy.session('base-home', () => {
       cy.visit('/');
@@ -56,7 +70,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit(product_page)
+    cy.visit(product_page_with_discount)
 
     ProductPage.check_discount_product_sticker()
 
@@ -76,7 +90,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit(product_page)
+    cy.visit(product_page_with_reviews)
 
     ProductPage.check_reviews()
 
@@ -116,7 +130,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit(product_page)
+    cy.visit(product_page_with_discount)
 
     ProductPage.check_product_basePrice()
 
@@ -212,7 +226,7 @@ describe('Страница товара', () => {
 
     ProductPage.interceptRequests()
 
-    cy.visit(product_page)
+    cy.visit(product_page_with_gift)
 
     ProductPage.check_gift_button()
   })

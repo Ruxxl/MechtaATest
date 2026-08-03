@@ -16,7 +16,7 @@ describe('Тестовый файл', () => {
 
         cy.visit('/')
 
-        home_page.popularCategories
+        home_page.checkPopularCategories()
 
     })
 

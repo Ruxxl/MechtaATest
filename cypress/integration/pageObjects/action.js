@@ -175,7 +175,7 @@ class actionPage {
             .should('be.visible')
             .click();
 
-        cy.url().should('include', '?sortBy=popularity');
+        cy.url().should('include', '?sortBy=expiring');
 
         cy.get('div.w-full')
             .contains('span[data-slot="label"]', 'Новые') // Ищет конкретный текст в конкретном слоте

@@ -2,7 +2,7 @@ import favorites from "../../integration/pageObjects/favorites";
 
 const Favorites = new favorites();
 
-describe('Главная страница', () => {
+describe('Избранное', () => {
 
     beforeEach(() => {
 
