@@ -1,4 +1,4 @@
-import productPage from '../../integration/pageObjects/product_page';
+import productPage from '../../support/pageObjects/product_page';
 
 const ProductPage = new productPage()
 
@@ -229,6 +229,32 @@ describe('Страница товара', () => {
     cy.visit(product_page_with_gift)
 
     ProductPage.check_gift_button()
+  })
+
+  describe('Негативные кейсы', () => {
+
+    it('Товар без скидки: стикер "Выгода" не отображается', () => {
+      cy.visit(product_page)
+      ProductPage.assertNoDiscountSticker()
+    })
+
+    it('Товар без подарка: кнопка выбора подарка не отображается', () => {
+      cy.visit(product_page)
+      ProductPage.assertNoGiftButton()
+    })
+
+    it('Товар без отзывов: счётчик отзывов не отображается', () => {
+      cy.visit(product_page)
+      ProductPage.assertNoReviewsCount()
+    })
+
+    it('Несуществующий товар: страница товара недоступна', () => {
+      cy.fixture('testData').then((testData) => {
+        cy.visit(testData.nonExistentProductUrl, { failOnStatusCode: false })
+        cy.get('#product-add-to-basket').should('not.exist')
+        cy.contains('Мы не можем найти то, что Вы ищете').should('be.visible')
+      })
+    })
   })
 
 })

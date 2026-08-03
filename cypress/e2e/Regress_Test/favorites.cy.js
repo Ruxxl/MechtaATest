@@ -1,18 +1,20 @@
-import favorites from "../../integration/pageObjects/favorites";    
+import favorites from "../../support/pageObjects/favorites";
 
 const Favorites = new favorites();
 
 describe('Избранное', () => {
 
-    beforeEach(() => {
-
-        Favorites.interceptRequests()
-        
+    it('Анонимный пользователь: пустое состояние избранного', () => {
+        cy.visit('/favorites/');
+        cy.url().should('include', 'pp.yc.mechta.kz');
+        // Список избранного анонимного пользователя не редиректит на логин —
+        // просто показывает собственное пустое состояние
+        Favorites.assertAnonymousEmptyState();
     });
 
-    it('Проверка базового состояния и API запросов', () => { // перехватываем запросы ДО visit
-        cy.url().should('include', 'pp.yc.mechta.kz');
-        
-        
+    it('Авторизованный пользователь: список избранного отображается', () => {
+        cy.login();
+        cy.visit('/favorites/');
+        Favorites.assertAuthenticatedListVisible();
     });
 });

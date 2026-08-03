@@ -1,3 +1,5 @@
+import { waitAndAssertStatus, waitOptional } from '../helpers/apiAssertions';
+
 class HomePage {
     constructor() {
         // Объект конфигурации: алиас -> эндпоинт
@@ -35,35 +37,19 @@ class HomePage {
         // поэтому его нельзя ждать наравне с остальными — cy.wait упадёт по таймауту
         const optionalForAnonymous = ['favorites'];
 
+        // Статусы, ожидаемые для конкретных алиасов, отличных от дефолтного [200]
+        const expectedStatusesByAlias = {
+            user: [200, 401],
+            history: [200, 204],
+        };
+
         Object.keys(this.endpoints).forEach(alias => {
             if (optionalForAnonymous.includes(alias)) {
-                cy.get(`@${alias}.all`, { timeout: 15000 }).then((interceptions) => {
-                    if (interceptions.length === 0) {
-                        cy.log(`ℹ️ ${alias}: запрос не отправлен (ожидаемо для анонимной сессии)`);
-                        return;
-                    }
-                    expect(interceptions[0].response?.statusCode).to.eq(200);
-                    cy.log(`✅ ${alias}: ${interceptions[0].response?.statusCode}`);
-                });
+                waitOptional(alias, { timeout: 15000 });
                 return;
             }
 
-            cy.wait(`@${alias}`, { timeout: 15000 }).then(({ response }) => {
-                const status = response?.statusCode;
-
-                // Используем switch для гибкой логики статусов
-                switch (alias) {
-                    case 'user':
-                        expect(status).to.be.oneOf([200, 401]);
-                        break;
-                    case 'history':
-                        expect(status).to.be.oneOf([200, 204]);
-                        break;
-                    default:
-                        expect(status).to.eq(200);
-                }
-                cy.log(`✅ ${alias}: ${status}`);
-            });
+            waitAndAssertStatus(alias, expectedStatusesByAlias[alias] || [200], { timeout: 15000 });
         });
     }
 
@@ -107,6 +93,17 @@ class HomePage {
         this.importantLinks.forEach(link => {
             cy.get(`a[href="${link}"]`).should('be.visible');
         });
+    }
+
+    // --- Негативные кейсы ---
+
+    // Поиск по запросу без совпадений: сайт не показывает пустой список,
+    // а рендерит отдельный экран "Ой, а мы ничего не нашли!"
+    assertSearchNoResults(query) {
+        cy.get('[placeholder="Искать товары"]').click().type(query);
+        cy.get('[placeholder="Искать товары"]').type('{enter}');
+        cy.url().should('include', '/search/');
+        cy.contains('Ой, а мы ничего не нашли').should('be.visible');
     }
 }
 

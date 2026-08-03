@@ -1,4 +1,4 @@
-import checkout from "../../integration/pageObjects/checkout";
+import checkout from "../../support/pageObjects/checkout";
 
 const Checkout = new checkout();
 
@@ -264,6 +264,61 @@ describe('Оформление заказа', () => {
 
         Checkout.checkout_pay_cash_courier()
 
+    })
+
+    describe('Негативные кейсы', () => {
+
+        it('Некорректный email на шаге "Получатель" блокирует переход дальше', () => {
+            Checkout.request_intercept()
+            cy.login()
+            cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/')
+            cy.get('#product-buy-now').should('be.visible').click({ force: true })
+            cy.url().should('include', 'checkout')
+            cy.wait(3000) // ждём, пока подтянутся и отрисуются данные получателя из API
+
+            Checkout.assertInvalidEmailBlocksStepOne('not-an-email')
+        })
+
+        it('Пустое ФИО на шаге "Получатель" блокирует переход дальше', () => {
+            Checkout.request_intercept()
+            cy.login()
+            cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/')
+            cy.get('#product-buy-now').should('be.visible').click({ force: true })
+            cy.url().should('include', 'checkout')
+            cy.wait(3000)
+
+            Checkout.assertEmptyFioBlocksStepOne()
+        })
+
+        it('Отсутствие адреса на шаге "Способ доставки" блокирует переход дальше', () => {
+            Checkout.request_intercept()
+            cy.login()
+            cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/')
+            cy.get('#product-buy-now').should('be.visible').click({ force: true })
+
+            Checkout.step_one()
+            Checkout.assertMissingAddressBlocksStepTwo()
+        })
+
+        it('Клик "Купить сейчас" без авторизации показывает окно входа, а не редиректит', () => {
+            cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/')
+            Checkout.assertBuyNowAnonymouslyShowsLoginModal()
+            cy.url().should('include', '/product/')
+        })
+
+        it('Редирект на главную при заходе в /checkout/ без авторизации даже с товаром в корзине', () => {
+            cy.visit('/product/smartfon-apple-iphone-15-128gb-pink/')
+            cy.get('body').then(($body) => {
+                if ($body.find('button:contains("В корзину")').length > 0) {
+                    cy.intercept('POST', '**/api/v2/basket/add').as('addToBasketCheckoutNegative')
+                    cy.get('#product-add-to-basket').click({ force: true })
+                    cy.wait('@addToBasketCheckoutNegative', { timeout: 20000 })
+                }
+            })
+
+            cy.visit('/checkout/')
+            cy.url().should('eq', 'https://pp.yc.mechta.kz/')
+        })
     })
 
 })

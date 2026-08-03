@@ -1,3 +1,6 @@
+import { digitsOnly } from '../helpers/textUtils';
+import { assertLoginModalShown } from '../helpers/authModal';
+
 class checkout {
 
     // Кликает по полю адреса: если address_value уже есть среди сохранённых —
@@ -122,7 +125,7 @@ class checkout {
 
             cy.get('input[name="phone"]').invoke('val').then((val) => {
                 // Убираем все не-цифры
-                let digits = val.replace(/\D/g, '')
+                let digits = digitsOnly(val)
                 // Отрезаем 7 (код страны)
                 if (digits.length === 11 && digits.startsWith('7')) {
                     digits = digits.slice(1)
@@ -430,6 +433,40 @@ class checkout {
 
         })
 
+    }
+
+    // --- Негативные кейсы ---
+
+    // Некорректный email на шаге "Получатель" должен блокировать переход
+    // на шаг "Способ доставки" и показывать текст ошибки под полем
+    assertInvalidEmailBlocksStepOne(email) {
+        cy.get('input[name="email"]').clear();
+        if (email) {
+            cy.get('input[name="email"]').type(email);
+        }
+        cy.contains('button', 'Далее').first().click();
+        cy.contains('Введите корректный email').should('be.visible');
+    }
+
+    // Пустое поле ФИО (обязательное) должно блокировать переход дальше
+    assertEmptyFioBlocksStepOne() {
+        cy.get('input[name="fio"]').clear();
+        cy.contains('button', 'Далее').first().click();
+        cy.contains('Заполните поле').should('be.visible');
+    }
+
+    // На шаге "Способ доставки" адрес обязателен — без него сайт не пускает
+    // на шаг "Способ оплаты" и показывает подсказку под полем адреса
+    assertMissingAddressBlocksStepTwo() {
+        cy.contains('button', 'Далее').click();
+        cy.contains('Уточните детали доставки').should('be.visible');
+    }
+
+    // Клик "Купить сейчас" без авторизации: как и "Оформить заказ" в корзине,
+    // показывает модалку логина, а не редиректит на главную
+    assertBuyNowAnonymouslyShowsLoginModal() {
+        cy.get('#product-buy-now').should('be.visible').click({ force: true });
+        assertLoginModalShown();
     }
 }
 

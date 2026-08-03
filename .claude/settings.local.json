@@ -19,7 +19,12 @@
       "Bash(GIT_CURL_VERBOSE=1 GIT_TRACE=1 git push origin main:main)",
       "Bash(git --version)",
       "Bash(git *)",
-      "Bash(GIT_CURL_VERBOSE=1 git -c http.version=HTTP/1.1 -c http.postBuffer=524288000 push origin main:main)"
+      "Bash(GIT_CURL_VERBOSE=1 git -c http.version=HTTP/1.1 -c http.postBuffer=524288000 push origin main:main)",
+      "Bash(xargs sed -i '' 's#\\\\.\\\\./\\\\.\\\\./integration/pageObjects#../../support/pageObjects#g')",
+      "Bash(python3 *)",
+      "Bash(node --check cypress/support/pageObjects/product_page.js)",
+      "Bash(node --check cypress/e2e/Regress_Test/Home_page.cy.js)",
+      "Bash(exit 0 *)"
     ]
   }
 }

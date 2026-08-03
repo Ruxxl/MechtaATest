@@ -1,4 +1,4 @@
-import HomePage from "../../integration/pageObjects/home_page";
+import HomePage from "../../support/pageObjects/home_page";
 
 const homePage = new HomePage();
 
@@ -64,6 +64,12 @@ describe('Главная страница', () => {
         homePage.checkPopularCategories();
     });
 
+    it('Динамическая проверка популярных категорий из API для авторизованного пользователя', () => {
+        cy.login();
+        cy.visit('/');
+        homePage.checkPopularCategories();
+    });
+
     it('Проверка популярных брендов при скролле', () => {
 
         cy.intercept('GET', '**/api/v3/popular/brands').as('brands'); // Перехватываем запрос брендов
@@ -78,8 +84,18 @@ describe('Главная страница', () => {
     it('Проверка футера и подписки', () => {
         cy.visit('/');
         cy.scrollTo('bottom');
-        
+
         cy.get('img[alt="preview\\ app\\ photo"]').should('be.visible');
         cy.contains('button', 'Подписаться').should('be.visible');
+    });
+
+    describe('Негативные кейсы', () => {
+
+        it('Поиск по несуществующему запросу показывает "ничего не найдено"', () => {
+            cy.fixture('testData').then((testData) => {
+                cy.visit('/');
+                homePage.assertSearchNoResults(testData.invalidSearchQuery);
+            });
+        });
     });
 });

@@ -1,4 +1,4 @@
-import actionPage from '../../integration/pageObjects/action';
+import actionPage from '../../support/pageObjects/action';
 
 const ActionPage = new actionPage();
 
@@ -106,5 +106,17 @@ describe('Страница Акции', () => {
         })
 
     })
+
+    describe('Негативные кейсы', () => {
+
+        it('Несуществующий слаг акции редиректит на список акций', () => {
+            cy.fixture('testData').then((testData) => {
+                // В отличие от товара (там 404), для несуществующей акции сайт
+                // молча редиректит на общий список /useful/shares/, без ошибки
+                cy.visit(testData.nonExistentPromoSlug, { failOnStatusCode: false });
+                cy.url().should('eq', 'https://pp.yc.mechta.kz/useful/shares/');
+            });
+        });
+    });
 
 })

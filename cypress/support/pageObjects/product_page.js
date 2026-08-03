@@ -1,3 +1,6 @@
+import { normalizePrice, digitsOnly, normalizeWhitespace } from '../helpers/textUtils';
+import { waitAndAssertStatus, waitOptional } from '../helpers/apiAssertions';
+
 const selectors = {
     productName: '#product-name',
     official_product_sticker: '#product-official-supplier-sticker',
@@ -77,24 +80,14 @@ class productPage {
         ];
 
         requests.forEach(alias => {
-            cy.wait(alias, {
-                timeout: 20000
-            }).its('response.statusCode').should('be.oneOf', [200, 204]);
+            waitAndAssertStatus(alias.replace('@', ''), [200, 204], { timeout: 20000 });
         });
 
         // user — отдельная проверка
-        cy.wait('@user')
-            .its('response.statusCode')
-            .should('be.oneOf', [200, 401]);
+        waitAndAssertStatus('user', [200, 401]);
 
         // favorites — для анонимной сессии бэкенд этот запрос не отправляет
-        cy.get('@favorites.all', { timeout: 20000 }).then((interceptions) => {
-            if (interceptions.length === 0) {
-                cy.log('ℹ️ favorites: запрос не отправлен (ожидаемо для анонимной сессии)');
-                return;
-            }
-            expect(interceptions[0].response?.statusCode).to.be.oneOf([200, 204]);
-        });
+        waitOptional('favorites', { timeout: 20000, expectedStatuses: [200, 204] });
     }
 
     check_product_name() {
@@ -131,7 +124,7 @@ class productPage {
                 .invoke('text')
                 .then((text) => {
                     // 3. Очищаем текст от "Выгода", "₸" и пробелов
-                    const cleanText = text.replace(/\D/g, '');
+                    const cleanText = digitsOnly(text);
 
                     // 4. Сравниваем как числа
                     expect(Number(cleanText)).to.eq(Number(discountApi));
@@ -204,10 +197,7 @@ class productPage {
                     .invoke('text')
                     .should('not.be.empty')
                     .then((text) => {
-                        const uiValue = text.replace(/\u00a0/g, ' ').trim();
-                        const apiValue = apiProperty.value.replace(/\u00a0/g, ' ').trim();
-
-                        expect(uiValue).to.include(apiValue);
+                        expect(normalizeWhitespace(text)).to.include(normalizeWhitespace(apiProperty.value));
                     });
             });
         });
@@ -231,12 +221,7 @@ class productPage {
                 .should('be.visible')
                 .invoke('text')
                 .then((productPriceFromUI) => {
-                    const normalizedUIPrice = productPriceFromUI
-                        .replace(/\s/g, '') // removes spaces & NBSPs
-                        .replace('₸', '') // removes currency symbol
-                        .trim();
-
-                    expect(normalizedUIPrice).to.eq(finalPrice.toString());
+                    expect(normalizePrice(productPriceFromUI)).to.eq(finalPrice.toString());
                 });
         })
     }
@@ -255,13 +240,7 @@ class productPage {
                 .should('be.visible')
                 .invoke('text')
                 .then((productPriceFromUI) => {
-
-                    const normalizedUIPrice = productPriceFromUI
-                        .replace(/\s/g, '') // removes spaces & NBSPs
-                        .replace('₸', '') // removes currency symbol
-                        .trim();
-
-                    expect(normalizedUIPrice).to.eq(basePrice.toString());
+                    expect(normalizePrice(productPriceFromUI)).to.eq(basePrice.toString());
                 });
         })
     }
@@ -280,10 +259,7 @@ class productPage {
                 .should('be.visible')
                 .invoke('text')
                 .then((productTextFromUI) => {
-
-                    const normalizedUIChips = productTextFromUI.replace(/\D/g, '');
-
-                    expect(normalizedUIChips).to.eq(chips.toString());
+                    expect(digitsOnly(productTextFromUI)).to.eq(chips.toString());
                 });
         });
     }
@@ -315,11 +291,8 @@ class productPage {
                 .should('be.visible')
                 .invoke('text')
                 .then((uiText) => {
-                    // Удаляем всё, кроме цифр (пробелы, ₸, /мес, &nbsp;)
-                    const cleanUiValue = uiText.replace(/\D/g, '');
-
                     // Сравниваем строго как числа
-                    expect(Number(cleanUiValue)).to.eq(Number(creditApi));
+                    expect(Number(digitsOnly(uiText))).to.eq(Number(creditApi));
                 });
         });
     }
@@ -339,12 +312,8 @@ class productPage {
                 .should('be.visible')
                 .invoke('text')
                 .then((buttonText) => {
-                    // 3. Извлекаем только цифры из текста кнопки
-                    // "Доступно в 3 магазинах" -> "3"
-                    const countFromUI = buttonText.replace(/\D/g, '');
-
                     // 4. Сравниваем количество объектов с числом из UI
-                    expect(Number(countFromUI)).to.eq(shopsCount);
+                    expect(Number(digitsOnly(buttonText))).to.eq(shopsCount);
                 });
         });
 
@@ -437,5 +406,20 @@ class productPage {
         });
     }
 
+    // --- Негативные кейсы ---
+    // Для товара без скидки/подарка/отзывов (см. fixtures/products.json -> inStock)
+    // соответствующие блоки не должны рендериться в DOM вообще, а не просто быть пустыми
+
+    assertNoDiscountSticker() {
+        cy.get(selectors.discount_product_sticker).should('not.exist');
+    }
+
+    assertNoGiftButton() {
+        cy.get(selectors.product_gift_button).should('not.exist');
+    }
+
+    assertNoReviewsCount() {
+        cy.get(selectors.product_reviews).should('not.exist');
+    }
 }
 export default productPage;

@@ -1,0 +1,13 @@
+{
+  "invalidPhones": {
+    "tooShort": "123",
+    "letters": "abcdefghij",
+    "empty": ""
+  },
+  "invalidSmsCode": "9999",
+  "nonExistentProductUrl": "/product/this-product-does-not-exist-xyz-123/",
+  "nonExistentPromoSlug": "/useful/shares/this-promo-does-not-exist-xyz-123/",
+  "invalidSearchQuery": "qwertyzxcvbnmasdfghjklzxc123456789",
+  "invalidIin": "1",
+  "invalidAddress": "asdkjhaskjdhaskjdh1234"
+}
