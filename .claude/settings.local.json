@@ -11,7 +11,15 @@
       "Bash(npx skills *)",
       "Bash(claude --version)",
       "Bash(claude mcp *)",
-      "Bash(perl -0pi -e \"s/\\\\.should\\\\\\('include\\\\.text', 'Купить сейчас'\\\\\\)\\\\n            \\\\.click\\\\\\(\\\\\\)/.should\\('include.text', 'Купить сейчас'\\)\\\\n            .click\\({ force: true }\\)/g\" cypress/e2e/Regress_Test/checkout.cy.js)"
+      "Bash(perl -0pi -e \"s/\\\\.should\\\\\\('include\\\\.text', 'Купить сейчас'\\\\\\)\\\\n            \\\\.click\\\\\\(\\\\\\)/.should\\('include.text', 'Купить сейчас'\\)\\\\n            .click\\({ force: true }\\)/g\" cypress/e2e/Regress_Test/checkout.cy.js)",
+      "Bash(git count-objects *)",
+      "Bash(git rev-list *)",
+      "Bash(git cat-file *)",
+      "Bash(sort -k3 -n -r)",
+      "Bash(GIT_CURL_VERBOSE=1 GIT_TRACE=1 git push origin main:main)",
+      "Bash(git --version)",
+      "Bash(git *)",
+      "Bash(GIT_CURL_VERBOSE=1 git -c http.version=HTTP/1.1 -c http.postBuffer=524288000 push origin main:main)"
     ]
   }
 }
