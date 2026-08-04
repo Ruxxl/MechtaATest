@@ -1,0 +1,42 @@
+{
+  "_note": "Значения подтверждены прямыми запросами к реальному API 2026-08-03. Акции — живые данные, поэтому totalCount/count в тестах вычисляются динамически из API, а не хардкодятся. Слаги ниже выбраны за свойство (кол-во категорий, наличие баннера), которое не должно исчезнуть в ближайшее время, но если конкретная акция снята с публикации, соответствующий тест нужно перенацелить на новый пример с тем же свойством.",
+
+  "knownCategorySlug": "tv-audio-video",
+  "knownCategoryName": "ТВ, аудио, видео",
+  "secondCategorySlug": "tehnika-dlya-doma",
+  "secondCategoryName": "Техника для дома",
+  "discountCategorySlug": "kuhonnaya-tehnika",
+  "discountCategoryName": "Бытовая техника",
+  "knownTypeCode": "cashback",
+  "knownTypeName": "Кэшбэк",
+
+  "bannerPromoSlug": "keshbek-10-pri-oplate-kartoy-freedom---tolko-do-16-avgusta",
+  "multiCategoryPromoSlug": "bonusy-za-otzyv",
+  "singleCategoryPromoSlug": "staylery-dyson-airwrap-i-d--s-vygodoy-do-60-000-",
+  "noCategoryPromoSlug": "galaxy-watch-ultra2-sozdany-chtoby-raskryt-vash-potencial-",
+
+  "nonExistentPromoSlug": "this-promo-does-not-exist-xyz-123",
+  "nonExistentCategorySlug": "ne-suschestvuyuschaya-kategoriya-123",
+  "nonExistentTypeCode": "unknown_type",
+
+  "_filtersNote": "Данные для FP-* (фильтры/подкатегории на детальной странице) подтверждены прямыми запросами к /api/v3/catalog/{category,filter,products} 2026-08-04. slug='uborka-doma' (Техника для уборки дома) и 'uhod-za-veshchami' (Техника по уходу за одеждой) — обе подкатегории 'tehnika-dlya-doma' внутри акции 'bonusy-za-otzyv'. Как и в остальной фикстуре — это живые данные, могут измениться, но структурные факты (разные группы фильтров, разные диапазоны цен) устойчивы.",
+  "filterPromoSlug": "bonusy-za-otzyv",
+  "filterCategorySlug": "tehnika-dlya-doma",
+  "filterCategoryName": "Техника для дома",
+  "filterSubcategorySlug": "uborka-doma",
+  "filterSubcategoryName": "Техника для уборки дома",
+  "filterSubcategory2Slug": "uhod-za-veshchami",
+  "filterSubcategory2Name": "Техника по уходу за одеждой",
+  "filterSubcategoryOnlyGroupSlug": "sbor-jidkosti",
+  "filterSubcategory2OnlyGroupSlug": "sushka",
+  "filterBrand1Slug": "tefal",
+  "filterBrand1Name": "Tefal",
+  "filterBrand2Slug": "dreame",
+  "filterBrand2Name": "Dreame",
+  "filterDiscountGroupSlug": "discount",
+  "filterDiscountValueSlug": "has_discount",
+  "filterDiscountValueName": "Да",
+  "filterZeroIntersectionBrandSlug": "dyson",
+  "filterZeroIntersectionBrandName": "Dyson",
+  "filterInvalidBrandSlug": "this-brand-does-not-exist-xyz"
+}
