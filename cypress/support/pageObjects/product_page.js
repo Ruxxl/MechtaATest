@@ -346,9 +346,13 @@ class productPage {
         });
 
         // Пример использования сохраненных адресов позже в тесте:
+        // Скоуп через #availabilityBlock обязателен — глобальный cy.contains(addr)
+        // на этой странице задевает скрытый мобильный дубль разметки (та же
+        // проблема дублирующегося DOM, что и в других местах проекта), и
+        // .should('be.visible') падает на невидимом дубле, хотя видимый есть
         cy.get('@targetAddresses').then((addresses) => {
             addresses.forEach((addr) => {
-                cy.contains(addr).should('be.visible');
+                cy.contains('#availabilityBlock', addr).should('be.visible');
             });
         });
         
@@ -406,6 +410,122 @@ class productPage {
         });
     }
 
+    // --- Панель сопутствующих товаров после "В корзину" (TC-CART-01,02,04,06,07,08) ---
+    // Разведка 2026-08-04: появляется НЕ у каждого товара — источник данных
+    // /api/v3/product/{slug}/relatedWithProviderData ({categories:[{category,
+    // products}], chargers, providerData:{strategyMessage}}). Панель НЕ имеет
+    // role="dialog" (в отличие от модалок подарка/характеристик) — ищем по
+    // заголовку "Товар добавлен в корзину". Кнопки внизу — "Продолжить" (закрывает
+    // панель, остаётся на странице товара — этим одним действием покрываются оба
+    // кейса плана, TC-CART-06 и TC-CART-08) и "В корзину" (ведёт на /basket/).
+    interceptRelatedProducts() {
+        cy.intercept('GET', '**/api/v3/product/*/relatedWithProviderData').as('relatedProducts');
+    }
+
+    waitRelatedProducts() {
+        return cy.wait('@relatedProducts', { timeout: 20000 });
+    }
+
+    get crossSellPanelHeading() {
+        return cy.contains('Товар добавлен в корзину');
+    }
+
+    assertCrossSellPanelShown() {
+        this.crossSellPanelHeading.should('be.visible');
+    }
+
+    assertCrossSellPanelNotShown() {
+        cy.contains('Товар добавлен в корзину').should('not.exist');
+    }
+
+    clickCrossSellTab(name) {
+        cy.contains('button', name).click();
+    }
+
+    // Карточки в панели сопутки — кнопка "+" имеет иконку i-ph:plus. Раньше здесь
+    // был cy.contains(name).parents().find('button') БЕЗ скоупа — .parents() уходит
+    // до <body>, и .find('button') находит ПЕРВУЮ подходящую кнопку на всей странице
+    // (не обязательно в карточке товара), из-за чего клик уходил в пустоту и
+    // addToBasket не срабатывал. .parents() в Cypress/jQuery упорядочен от ближайшего
+    // предка к дальнему, поэтому .filter(...).first() после него берёт САМОГО
+    // БЛИЖНЕГО предка с плюс-кнопкой — то есть саму карточку товара.
+    addRelatedProductByName(name) {
+        cy.contains(name)
+            .parents()
+            .filter((i, el) => !!el.querySelector('[class*="i-ph:plus"]'))
+            .first()
+            .find('button')
+            .filter((i, el) => !!el.querySelector('[class*="i-ph:plus"]'))
+            .first()
+            .click({ force: true });
+    }
+
+    clickCrossSellContinue() {
+        cy.contains('button', 'Продолжить').click();
+    }
+
+    clickCrossSellGoToCart() {
+        cy.contains('button', 'В корзину').click();
+    }
+
+    // Немедленный cy.visit('/basket/') сразу после клика "В корзину" иногда
+    // успевает произойти раньше, чем реально уйдёт запрос добавления (та же
+    // гонка, что уже была исправлена в add_basket.js) — интерцепт+wait перед
+    // переходом убирает эту гонку
+    interceptAddToBasket() {
+        cy.intercept('POST', '**/api/v2/basket/add').as('addToBasket');
+    }
+
+    waitAddToBasket() {
+        return cy.wait('@addToBasket', { timeout: 20000 });
+    }
+
+    // --- Панель "Все характеристики" (TC-INFO-17..20,23) ---
+    openCharacteristicsPanel() {
+        cy.contains('button,a', 'Все характеристики').click();
+    }
+
+    // Иконки на сайте — это <span class="iconify i-ph:..."> (Iconify), НЕ <svg>,
+    // поэтому поиск по querySelector('svg') всегда возвращал пустой набор
+    closeCharacteristicsPanel() {
+        cy.get('[role="dialog"]').find('button').filter((i, el) => !!el.querySelector('[class*="iconify"]') && el.getBoundingClientRect().width > 0).first().click({ force: true });
+    }
+
+    // Кнопки покупки внутри панели дублируют id с фоновой страницей — берём
+    // видимую кнопку С НУЖНЫМ ТЕКСТОМ строго внутри диалога
+    clickPanelBuyButton(label) {
+        cy.get('[role="dialog"]')
+            .find('button')
+            .filter((i, el) => el.textContent.trim() === label && el.getBoundingClientRect().width > 0)
+            .first()
+            .click();
+    }
+
+    openGiftModal() {
+        cy.get(selectors.product_gift_button).should('be.visible').click();
+    }
+
+    get giftModalTabs() {
+        return cy.get('[role="dialog"]').contains('button', 'Выбрать подарок').closest('[role="dialog"]')
+            .find('button').filter((i, el) => /Подарок\d+$/.test(el.textContent.trim()));
+    }
+
+    clickGiftModalTab(index) {
+        this.giftModalTabs.eq(index).click();
+    }
+
+    selectGiftOption(index) {
+        cy.get('[role="dialog"] button[role="radio"]').eq(index).click({ force: true });
+    }
+
+    confirmGiftSelection() {
+        cy.get('[role="dialog"]').contains('button', 'Выбрать подарок').click();
+    }
+
+    cancelGiftSelection() {
+        cy.get('[role="dialog"]').contains('button', 'Отмена').click();
+    }
+
     // --- Негативные кейсы ---
     // Для товара без скидки/подарка/отзывов (см. fixtures/products.json -> inStock)
     // соответствующие блоки не должны рендериться в DOM вообще, а не просто быть пустыми
@@ -420,6 +540,413 @@ class productPage {
 
     assertNoReviewsCount() {
         cy.get(selectors.product_reviews).should('not.exist');
+    }
+
+    // --- "На витрине" (onlyShopwindow) — cypress/e2e/.../product_onlyShopwindow/ ---
+    // Стикер #product-only-shop-window_desktop должен отображаться ТОГДА И ТОЛЬКО
+    // ТОГДА, когда корневой ответ /product/{slug} содержит onlyShopwindow: true —
+    // в отличие от check_only_shop_sticker() (который просто проверяет видимость
+    // на товаре, заведомо выбранном как витринный), этот метод работает для ЛЮБОГО
+    // товара и сам решает, каким должен быть результат
+    assertOnlyShopwindowStickerMatchesApi() {
+        cy.wait('@product', { timeout: 20000 }).then((interception) => {
+            expect(interception.response.statusCode).to.eq(200);
+            const onlyShopwindow = interception.response.body.onlyShopwindow;
+
+            if (onlyShopwindow) {
+                cy.get(selectors.only_shop_sticker).should('be.visible').should('have.text', 'На витрине');
+            } else {
+                cy.get(selectors.only_shop_sticker).should('not.exist');
+            }
+        });
+    }
+
+    // Внутренняя согласованность /subdivisions: там, где onlyShopwindow===true,
+    // текстовая метка stock ДОЛЖНА быть "На витрине" (и наоборот) — рассинхрон
+    // между этими двумя полями одного ответа это баг API уровня, независимо от UI
+    assertSubdivisionsShopwindowConsistency() {
+        cy.wait('@subdivisions', { timeout: 20000 }).then((interception) => {
+            expect(interception.response.statusCode).to.eq(200);
+            const items = interception.response.body;
+            expect(items, 'у товара должен быть хотя бы один магазин в ответе').to.have.length.greaterThan(0);
+
+            items.forEach((item) => {
+                if (item.onlyShopwindow) {
+                    expect(item.stock, `${item.address}: onlyShopwindow=true, но stock не 'На витрине'`).to.eq('На витрине');
+                } else {
+                    expect(item.stock, `${item.address}: onlyShopwindow=false, но stock='На витрине'`).to.not.eq('На витрине');
+                }
+            });
+        });
+    }
+
+    // Чекбокс "Скрыть витрину" в блоке "Доступно на самовывоз" — кастомный
+    // (button[role="checkbox"] внутри [data-slot="root"]), не нативный <input>
+    get hideShopwindowCheckbox() {
+        return cy.get('#product-availability-hidden-on-window');
+    }
+
+    toggleHideShopwindow() {
+        this.hideShopwindowCheckbox.click({ force: true });
+    }
+
+    get storeSearchInput() {
+        return cy.get('#product-availability-search-input');
+    }
+
+    searchStore(query) {
+        this.storeSearchInput.clear().type(query);
+    }
+
+    assertAddressVisibleInAvailability(address) {
+        cy.get('#availabilityBlock').should('contain.text', address);
+    }
+
+    // --- "Показать все магазины" (TC-STORE-06) ---
+    // Разведка 2026-08-05: кнопка появляется только когда /subdivisions возвращает
+    // БОЛЬШЕ магазинов, чем помещается в свёрнутый список (подтверждено: 11 магазинов
+    // → видно 4 + кнопка; 5 магазинов → кнопки нет вообще, видны все сразу)
+    clickShowAllStores() {
+        cy.get('#availabilityBlock').contains('button', 'Показать все магазины').click();
+    }
+
+    assertAddressNotVisibleInAvailability(address) {
+        cy.get('#availabilityBlock').should('not.contain.text', address);
+    }
+
+    // --- Виджет выбора варианта по характеристике (например, площадь для
+    // кондиционеров) — данные из /similar. НЕ у каждого товара он есть.
+    // Кнопки задублированы для mobile/desktop — фильтруем по реальной видимости.
+    get variantButtons() {
+        return cy.get('button').filter((i, el) => {
+            const rect = el.getBoundingClientRect();
+            return rect.width > 0 && /^\d+\s*м²$/.test(el.textContent.trim());
+        });
+    }
+
+    clickVariantByLabel(label) {
+        this.variantButtons.contains(label).click();
+    }
+
+    // --- ОБЩИЙ вариант виджета выше — /similar генерирует группу для ЛЮБОЙ
+    // характеристики, не только площади: подтверждено разведкой 2026-08-05 на
+    // смартфонах — "Цвет корпуса" (type: "image", кнопки БЕЗ текста, только
+    // картинка-свотч) и "Объём встроенной памяти" (type: "text"). variantButtons
+    // выше не годится для картиночных групп (фильтрует по regex текста внутри
+    // кнопки) — здесь скоупимся через ближайший ПОДПИСАННЫЙ заголовок группы
+    // (например, "Цвет корпуса: чёрный"), а не через содержимое самих кнопок.
+    // Активный вариант помечен тем же классом, что и активная миниатюра галереи
+    // (border-mi-brand-base-brand-secondary, см. activeThumbnailIndicatorClass).
+    getVariantGroupButtons(headingText) {
+        return cy.contains('p', headingText)
+            .then(($headings) => {
+                // Может быть дубль mobile/desktop — берём видимый
+                const $heading = $headings.filter((i, el) => Cypress.dom.isVisible(el)).first();
+                return cy.wrap($heading.next()).find('button');
+            });
+    }
+
+    clickVariantInGroup(headingText, index) {
+        this.getVariantGroupButtons(headingText).eq(index).click();
+    }
+
+    assertActiveVariantIndexInGroup(headingText, expectedIndex) {
+        this.getVariantGroupButtons(headingText).each(($btn, i) => {
+            const isActive = $btn[0].className.includes('border-mi-brand-base-brand-secondary');
+            expect(isActive, `кнопка варианта #${i} активна`).to.eq(i === expectedIndex);
+        });
+    }
+
+    // --- Группа "Состояние" (Новый/Уценённый) — разведка 2026-08-05 на
+    // iPhone 17 Pro Max 2TB: третий тип группы в /similar (type: "defective"),
+    // устроен ИНАЧЕ, чем цвет/память:
+    // - Заголовок в DOM ("Состояние") НЕ совпадает с group.name из API
+    //   ("Уценённые") — это единственная группа, где нельзя искать по имени из API.
+    // - Варианты — обычные <a href="/product/{slug}/">, а не <button> с JS-роутингом.
+    // - "Новый" — это ссылка САМА НА СЕБЯ (текущий товар), которой нет в products[]
+    //   ответа API (API возвращает только альтернативу — "Уценённый"). Активный
+    //   вариант помечен КЛАССОМ "ring-mi-brand-line-brand!" (другой маркер, не
+    //   border-mi-brand-base-brand-secondary, как у цвета/памяти).
+    conditionLink(productSlug) {
+        return cy.get(`a[href="/product/${productSlug}/"]`);
+    }
+
+    assertConditionLinkActive(productSlug, active) {
+        this.conditionLink(productSlug).should(active ? 'have.class' : 'not.have.class', 'ring-mi-brand-line-brand!');
+    }
+
+    // --- Подсказка по бонусам/фишкам (TC-BONUS-01) ---
+    // Разведка 2026-08-05: строка "+N бонусов, +N фишек" — кликабельная <section>
+    // (класс содержит cursor-pointer), не иконка "?" как в исходном плане. Открывает
+    // [role="dialog"] с заголовком "Программа лояльности" и текстом про оба числа.
+    // ВАЖНО: внутри диалога НЕТ ссылки "Подробнее" (только безымянная кнопка-крестик
+    // закрытия) — TC-BONUS-02/03 из плана (переход по ссылке, ошибка роута) описывают
+    // функциональность, которой на сайте физически нет, см. README области.
+    // Разведка 2026-08-05 (повторно, после падения в Cypress): на странице сразу
+    // НЕСКОЛЬКО вложенных <section>, чей textContent содержит "бонус" (внешний
+    // контейнер + внутренняя кликабельная секция). cy.contains(selector, text)
+    // возвращает только ОДНО (первое найденное) совпадение — если это внешний
+    // контейнер БЕЗ cursor-pointer, последующий .filter() всегда получает 0
+    // элементов. Правильно — сначала cy.get('section') (все), потом .filter()
+    // проверяет И текст, И класс на каждой из них.
+    get bonusInfoTrigger() {
+        return cy.get('section').filter((i, el) => /бонус/i.test(el.textContent) && el.className.includes('cursor-pointer'));
+    }
+
+    openBonusInfoModal() {
+        this.bonusInfoTrigger.first().click();
+    }
+
+    // --- Сортировка отзывов (TC-REV-01..03) ---
+    // Разведка 2026-08-05: id вкладок сортировки — "reka-tabs-v-0-0-1-0-trigger-{code}",
+    // где {code} совпадает С КОДОМ из sorts[].code ответа /reviews (all/helpful/high/low)
+    // — предсказуемый паттерн, не завязан на текст.
+    clickReviewSort(code) {
+        cy.get(`[id$="trigger-${code}"]`).click();
+    }
+
+    // --- Лайк/дизлайк отзыва (TC-REV-05..08) ---
+    // Разведка 2026-08-05: устойчивые id "#product-review-like-{index}" /
+    // "#product-review-dislike-{index}" (index — позиция отзыва на текущей странице,
+    // 0-based). Один и тот же эндпоинт POST /api/v3/reviews/vote переключает голос
+    // туда-обратно (тело содержит cancel:true/false) — повторный клик СНИМАЕТ голос,
+    // а не меняет like на dislike. Активный голос помечен классом иконки
+    // "i-ph:thumbs-up-fill"/"i-ph:thumbs-down-fill" (+ text-mi-text-complementary),
+    // неактивный — "i-ph:thumbs-up"/"i-ph:thumbs-down" (+ text-mi-text-secondary).
+    reviewLikeButton(index) {
+        return cy.get(`#product-review-like-${index}`);
+    }
+
+    reviewDislikeButton(index) {
+        return cy.get(`#product-review-dislike-${index}`);
+    }
+
+    assertReviewVoteActive(index, type, active) {
+        const iconClass = type === 'like'
+            ? (active ? 'i-ph:thumbs-up-fill' : 'i-ph:thumbs-up')
+            : (active ? 'i-ph:thumbs-down-fill' : 'i-ph:thumbs-down');
+        const selector = type === 'like' ? `#product-review-like-${index}` : `#product-review-dislike-${index}`;
+        cy.get(`${selector} [class*="iconify"]`).should('have.class', iconClass);
+    }
+
+    // --- Фото в отзывах (нестандартный, в рамках TC-REV) ---
+    // Разведка 2026-08-05 (по просьбе пользователя): превью фото в карточке отзыва —
+    // <img src содержит apltcdn/media_files> (thumb-версия из photos[].thumb),
+    // обёрнутое в <button>. Клик открывает [role="dialog"] с ПОЛНОЙ информацией:
+    // название товара, большое фото, автор/дата/рейтинг отзыва, полоска миниатюр
+    // (если фото несколько), текст отзыва, лайки/дизлайки, счётчик "N из M" и стрелки
+    // навигации между фото ЭТОГО отзыва. Закрывается по Esc И по крестику — ОБА
+    // способа реально работают, но с анимацией закрытия (~1-1.5с) — недостаточный
+    // wait перед проверкой отсутствия диалога даёт ложное "не закрылось".
+    // Разведка 2026-08-05: карточка отзыва целиком — это <li> (список отзывов —
+    // <ul><li>...). closest('li') от кнопки лайка/дизлайка ДАЁТ ТОЧНО ту же карточку,
+    // что содержит её фото — подтверждено напрямую (отзыв с 1 фото → 1 img в li,
+    // отзыв с 3 фото → 3 img в li). Это НАДЁЖНЕЕ произвольного числа .parent()/.closest()
+    // с угаданными классами, которые уже не раз ловили гонки/промахи в этой сессии.
+    reviewCard(index) {
+        return cy.get(`#product-review-like-${index}`).closest('li');
+    }
+
+    reviewPhotoThumbnails(index) {
+        return this.reviewCard(index).find('img').filter((i, el) => (el.getAttribute('src') || '').match(/apltcdn|media_files/) && el.getBoundingClientRect().width > 0);
+    }
+
+    clickReviewPhotoThumbnail(index, photoIndex = 0) {
+        this.reviewPhotoThumbnails(index).eq(photoIndex).closest('button').click();
+    }
+
+    get photoGalleryDialog() {
+        return cy.get('[role="dialog"]');
+    }
+
+    get photoGalleryCounter() {
+        return this.photoGalleryDialog.contains(/^\d+\s*из\s*\d+$/);
+    }
+
+    // Разведкой (по просьбе пользователя) подтверждено: галерея показывает ПОЛНЫЙ
+    // контекст отзыва рядом с фото — рейтинг звёздами, текст отзыва, лайки/дизлайки —
+    // это должно совпадать с данными ИМЕННО того отзыва, чьё фото открыли, не просто
+    // "что-то на экране". Реальные селекторы (проверены напрямую в DOM, не угаданы):
+    // - звёзды рейтинга — <svg class="text-mi-text-warning">, дублируются в разметке
+    //   (mobile/desktop), видимые (width>0) ровно в количестве review.rating;
+    // - лайк/дизлайк — <button> с дочерним <span class*="i-ph:thumbs-up/down">, число
+    //   лежит текстом в самой кнопке (иконка текста не имеет, поэтому .text() кнопки
+    //   == само число). Разведкой подтверждено: при счётчике 0 число ВООБЩЕ не
+    //   рендерится (пустой текст кнопки) — осознанный UX (бейдж скрыт при нуле), не баг.
+    assertPhotoGalleryMatchesReview(review) {
+        const likesText = review.likes > 0 ? String(review.likes) : '';
+        const dislikesText = review.dislikes > 0 ? String(review.dislikes) : '';
+        this.photoGalleryDialog.within(() => {
+            cy.contains(review.authorName).should('be.visible');
+            cy.contains(review.body.slice(0, 30)).should('be.visible');
+            cy.get('svg.text-mi-text-warning').filter((i, el) => el.getBoundingClientRect().width > 0)
+                .should('have.length', review.rating);
+            cy.get('span[class*="i-ph:thumbs-up"]').closest('button').should('have.text', likesText);
+            cy.get('span[class*="i-ph:thumbs-down"]').closest('button').should('have.text', dislikesText);
+        });
+    }
+
+    clickPhotoGalleryNext() {
+        this.photoGalleryDialog.find('button').filter((i, el) => {
+            const r = el.getBoundingClientRect();
+            return r.width > 0 && r.width < 60 && !!el.querySelector('[class*="caret-right"], [class*="arrow-right"]');
+        }).first().click();
+    }
+
+    closePhotoGalleryByEsc() {
+        cy.get('body').type('{esc}');
+        // Анимация закрытия ~1-1.5с — недостаточный wait даёт ложное "не закрылось"
+        cy.wait(1500);
+    }
+
+    get photoGalleryDialog() {
+        return cy.get('[role="dialog"]');
+    }
+
+    get photoGalleryCounter() {
+        return cy.contains(/^\d+\s*из\s*\d+$/);
+    }
+
+    clickPhotoGalleryNext() {
+        this.photoGalleryDialog.find('button').filter((i, el) => {
+            const r = el.getBoundingClientRect();
+            return r.width > 0 && r.width < 60 && !!el.querySelector('[class*="caret-right"], [class*="arrow-right"]');
+        }).first().click();
+    }
+
+    closePhotoGalleryByEsc() {
+        cy.get('body').type('{esc}');
+        // Анимация закрытия ~1-1.5с — недостаточный wait даёт ложное "не закрылось"
+        cy.wait(1500);
+    }
+
+    assertBonusInfoModalMatchesApi() {
+        cy.wait('@product_offers', { timeout: 20000 }).then((interception) => {
+            expect(interception.response.statusCode).to.eq(200);
+            const { bonuses, chips } = interception.response.body;
+
+            this.openBonusInfoModal();
+            cy.get('[role="dialog"]').should('be.visible');
+            cy.contains('Программа лояльности').should('be.visible');
+            // Число разрядов разделено NBSP на странице — сравниваем по тексту без
+            // пробелов вообще, а не пытаемся угадать разделитель разрядов
+            cy.get('[role="dialog"]').invoke('text').then((text) => {
+                const normalized = text.replace(/[\s ]/g, '');
+                expect(normalized).to.include(`${bonuses}бонус`);
+                expect(normalized).to.include(`${chips}фишек`);
+            });
+        });
+    }
+
+    // --- Описание (/description) ---
+    assertDescriptionMatchesApi() {
+        cy.wait('@description', { timeout: 20000 }).then((interception) => {
+            expect(interception.response.statusCode).to.eq(200);
+            const description = interception.response.body.description;
+
+            if (description) {
+                // Ответ может содержать HTML-разметку — сравниваем по значимому
+                // фрагменту текста, а не побайтово
+                const plainText = description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+                const snippet = plainText.slice(0, 40);
+                cy.get('#product-description').should('be.visible').should('include.text', snippet);
+            } else {
+                cy.get('#product-description').should('not.exist');
+            }
+        });
+    }
+
+    // --- Отзывы: базовая математическая согласованность summary ---
+    // --- Галерея изображений (TC-GAL-*) ---
+    // Разведка 2026-08-04: это не "одно главное фото на замену", а горизонтальная
+    // лента из ВСЕХ img сразу; активная миниатюра помечена классом
+    // border-mi-brand-base-brand-secondary (у остальных его нет)
+    get galleryThumbnails() {
+        // Диапазон 20-90px слишком широкий — задевает иконки сравнения/избранного
+        // (36/50/52px) рядом с миниатюрами. Реальные миниатюры — ровно ~74px
+        // (кнопка p-2 size-22) — сужаем диапазон до 70-80, подтверждено разведкой
+        return cy.get('img').filter((i, img) => {
+            const rect = img.getBoundingClientRect();
+            return rect.width >= 70 && rect.width <= 80 && !!img.closest('button');
+        }).then(($imgs) => cy.wrap([...$imgs].map((img) => img.closest('button'))));
+    }
+
+    get activeThumbnailIndicatorClass() {
+        // Хвостовой "!" — часть самого класса (конвенция Tailwind !important в
+        // этом проекте, см. bg-white!/rounded-mi-xl! и т.д.), а не опечатка
+        return 'border-mi-brand-base-brand-secondary!';
+    }
+
+    clickGalleryArrow(direction) {
+        const iconClass = direction === 'right' ? 'i-ph:caret-right-light' : 'i-ph:caret-left-light';
+        cy.get(`[class*="${iconClass}"]`).first().closest('button').click({ force: true });
+    }
+
+    openGalleryModal() {
+        cy.get('img').filter((i, img) => img.getBoundingClientRect().width > 300).first().click();
+    }
+
+    // --- Избранное / Сравнение (TC-FAV-01/02, TC-CMP-01/02) ---
+    // Разведка 2026-08-05: рабочие пары id — есть дублирующая мобильная версия
+    // с width=0, поэтому явно уточняем _desktop. Иконки: heart/heart-fill
+    // (избранное), scales/scales-fill (сравнение). Состояние реально сохраняется
+    // на бэке ДАЖЕ для анонимной сессии (device-id-scoped) — POST .../add и
+    // .../delete, подтверждено через cy.reload(). Первая попытка проверить это
+    // через cy.request() с произвольным X-Mechta-Device-Id показала "пусто" —
+    // это не баг, а моя ошибка разведки: device-id должен совпадать с тем, что
+    // реально использует браузерная сессия, иначе это просто другой аноним.
+    interceptFavorites() {
+        cy.intercept('POST', '**/api/v3/favorites/add').as('favoriteAdd');
+        cy.intercept('POST', '**/api/v3/favorites/delete').as('favoriteDelete');
+    }
+
+    interceptCompare() {
+        cy.intercept('POST', '**/api/v2/compare').as('compareAdd');
+        cy.intercept('POST', '**/api/v2/compare/delete').as('compareDelete');
+    }
+
+    get favoriteButton() {
+        return cy.get('#product-add-to-favorite_desktop');
+    }
+
+    get compareButton() {
+        return cy.get('#product-add-to-compare_desktop');
+    }
+
+    clickFavorite() {
+        this.favoriteButton.click();
+    }
+
+    clickCompare() {
+        this.compareButton.click();
+    }
+
+    assertFavoriteIconState(active) {
+        this.favoriteButton.find('[class*="iconify"]')
+            .should('have.class', active ? 'i-ph:heart-fill' : 'i-ph:heart')
+            .should('not.have.class', active ? 'i-ph:heart' : 'i-ph:heart-fill');
+    }
+
+    assertCompareIconState(active) {
+        this.compareButton.find('[class*="iconify"]')
+            .should('have.class', active ? 'i-ph:scales-fill' : 'i-ph:scales')
+            .should('not.have.class', active ? 'i-ph:scales' : 'i-ph:scales-fill');
+    }
+
+    assertReviewsSummaryConsistent() {
+        cy.wait('@reviews', { timeout: 20000 }).then((interception) => {
+            expect(interception.response.statusCode).to.eq(200);
+            const { summary } = interception.response.body;
+
+            const sumByStars = summary.statistics.reduce((sum, s) => sum + s.count, 0);
+            expect(sumByStars, 'сумма statistics[].count должна равняться reviewsCount').to.eq(summary.reviewsCount);
+
+            if (summary.reviewsCount > 0) {
+                const weightedSum = summary.statistics.reduce((sum, s) => sum + s.rating * s.count, 0);
+                const expectedAverage = Math.round((weightedSum / summary.reviewsCount) * 10) / 10;
+                expect(summary.averageRating, 'averageRating должен соответствовать статистике по звёздам').to.eq(expectedAverage);
+            }
+        });
     }
 }
 export default productPage;

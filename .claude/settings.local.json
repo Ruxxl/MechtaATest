@@ -76,7 +76,25 @@
       "Bash(awk '/it\\\\\\(.FP/{name=$0; count=0} /Detail\\\\.visit\\\\\\(/{count++} /}\\\\\\);/{if\\(count>1\\) print name, \"-> visits:\", count}' \"/Users/ruslanisin/Documents/MechtaATest/cypress/e2e/Regress_Test/actions/action_filters.cy.js\")",
       "Bash(echo \"EXIT:$?\")",
       "Bash(curl -s -G \"https://www.mechta.kz/api/v3/catalog/filter\" -H \"Accept: application/json\" -H \"X-City-Code: astana\" --data-urlencode \"slug=uborka-doma\" --data-urlencode \"promotion=bonusy-za-otzyv\" --data-urlencode \"properties[brend][]=dyson\")",
-      "WebSearch"
+      "WebSearch",
+      "Bash(curl -s https://www.mechta.kz/api/v3/product/kondicioner-arayplus-fm-07hrn8-s-installyaciey -H 'Accept: application/json' -H 'X-City-Code: astana')",
+      "Bash(curl -s https://www.mechta.kz/api/v3/product/kondicioner-arayplus-fm-07hrn8-s-installyaciey -H 'Accept: application/json' -H 'X-City-Code: astana' -H 'X-Mechta-Device-Id: test-device-123')",
+      "Bash(curl -s https://www.mechta.kz/api/v3/product/kondicioner-arayplus-fm-07hrn8-s-installyaciey/shipment -H 'Accept: application/json' -H 'X-City-Code: astana' -H 'X-Mechta-Device-Id: test-device-123')",
+      "Bash(curl -s https://www.mechta.kz/api/v3/product/kondicioner-arayplus-fm-07hrn8-s-installyaciey/offers -H 'Accept: application/json' -H 'X-City-Code: astana' -H 'X-Mechta-Device-Id: test-device-123')",
+      "Bash(curl -s https://www.mechta.kz/api/v3/product/kondicioner-arayplus-fm-07hrn8-s-installyaciey/description -H 'Accept: application/json' -H 'X-City-Code: astana' -H 'X-Mechta-Device-Id: test-device-123')",
+      "Bash(curl -s 'https://www.mechta.kz/api/v3/product/kondicioner-arayplus-fm-07hrn8-s-installyaciey/reviews?sort=all&page=1' -H 'Accept: application/json' -H 'X-City-Code: astana' -H 'X-Mechta-Device-Id: test-device-123')",
+      "Bash(curl -s https://www.mechta.kz/api/v3/product/kondicioner-arayplus-fm-07hrn8-s-installyaciey/subdivisions -H 'Accept: application/json' -H 'X-City-Code: astana' -H 'X-Mechta-Device-Id: test-device-123')",
+      "Bash(curl *)",
+      "Bash(awk '/Running:  sticker_and_availability/,/Screenshots/' \"/private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/osw_run2.log\")",
+      "Bash(awk '{print $3, $4}')",
+      "Bash(pkill -f \"cypress run\")",
+      "Bash(pkill -f \"Cypress.app\")",
+      "Bash(sips -c 1440 900 -x 2000 -y 0 after-error-2s.png --out /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/crop_right.png)",
+      "Bash(rm -f cypress/screenshots/_recon_error.cy.js/*.png)",
+      "Bash(rm -f /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/recon_page_interactive.json)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/reviews_run3.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/reviews_run4.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/reviews_run5.log)"
     ]
   }
 }

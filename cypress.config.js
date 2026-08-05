@@ -4,6 +4,7 @@ module.exports = {
 
   e2e: {
     baseUrl: 'https://pp.yc.mechta.kz',
+    chromeWebSecurity: false,
     supportFile: 'cypress/support/e2e.js',
     viewportWidth: 2560,
     viewportHeight: 1440,

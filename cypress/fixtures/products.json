@@ -1,11 +1,11 @@
 {
   "inStock": {
     "url": "/product/smartfon-apple-iphone-15-128gb-pink/",
-    "note": "В наличии, есть 'В корзину'/'Купить сейчас', самовывоз, доставка. Без скидки, без отзывов, без подарка — не использовать для check_discount_product_sticker / check_reviews / check_product_basePrice / check_express_delivery / check_gift_button."
+    "note": "В наличии, есть 'В корзину'/'Купить сейчас', самовывоз, доставка. Без скидки, без отзывов, без подарка — не использовать для check_discount_product_sticker / check_reviews / check_product_basePrice / check_express_delivery / check_gift_button. Подтверждено 05.08.2026: при добавлении в корзину открывается панель сопутствующих товаров (/relatedWithProviderData содержит категории и непустой chargers[]) — используется как позитивный пример для TC-CART-01/04/06/07/08. В категории 'Все' есть товар 'Чехол для телефона APPLE iPhone 15 Clear Case' с availability='notAvailable' — попадает в 'Недоступно для заказа' на странице корзины, даже если на него нажать '+' в панели (полезный негативный/граничный кейс)."
   },
   "withReviews": {
     "url": "/product/naushniki-apple-airpods-4-mxp63zea/",
-    "note": "Подтверждено 03.08.2026: есть #product-review-count, #product-add-to-basket, #product-deliveries-1. Без скидки и без подарка."
+    "note": "Подтверждено 03.08.2026: есть #product-review-count, #product-add-to-basket, #product-deliveries-1. Без скидки и без подарка. Подтверждено 05.08.2026: /subdivisions содержит 11 магазинов — блок 'Наличие в магазинах' изначально показывает только 4, дальше кнопка 'Показать все магазины' (используется для TC-STORE-06). У товаров с малым числом магазинов (например fixtures.onlyShopwindow, 5 шт.) этой кнопки нет вообще — видны все сразу."
   },
   "withGift": {
     "url": "/product/smartfon-infinix-hot-60-pro-256plus8-jungle-breath/",
@@ -13,6 +13,27 @@
   },
   "withDiscount": {
     "url": "/product/holodilnik-midea-mdrm-691mie46/",
-    "note": "Подтверждено 03.08.2026: цена со скидкой -11% (619990 -> 549990), базовая и финальная цена различаются."
-  }
+    "note": "Подтверждено 03.08.2026: цена со скидкой -11% (619990 -> 549990), базовая и финальная цена различаются. onlyShopwindow: false (подтверждено 04.08.2026) — используется как негативный пример для сравнения со стикером 'На витрине'."
+  },
+  "onlyShopwindow": {
+    "url": "/product/kondicioner-arayplus-fm-07hrn8-s-installyaciey/",
+    "note": "Подтверждено 04.08.2026 напрямую через API: onlyShopwindow=true, ВСЕ 7 записей в /subdivisions имеют onlyShopwindow=true и stock='На витрине' (stockProgress=0). todayDelivery=false, expressDelivery=false, pickupAvailable=true. Есть скидка (discount=30000, -24%), есть 5 отзывов (summary.averageRating=5), есть непустой /similar (виджет выбора варианта по площади помещения: 21/27/36/54/72 м²). bonuses=2849, chips=9. gifts=null, bundles=null. ИСПРАВЛЕНО 05.08.2026: более ранняя заметка о том, что панель сопутки НЕ появляется для этого товара, была НЕВЕРНОЙ/устаревшей — повторной проверкой напрямую через /relatedWithProviderData подтверждено categoriesCount=7 (непустой). Для TC-CART-02 ('без сопутки') нельзя полагаться на конкретный товар (состав сопутки у товаров меняется) — используется cy.intercept с замоканным пустым ответом (categories: [], chargers: []) на /relatedWithProviderData — универсальный приём API-стаббинга, см. skill п.5."
+  },
+  "withColorVariants": {
+    "url": "/product/smartfon-apple-iphone-17e-256gb-black/",
+    "note": "Подтверждено 05.08.2026: /similar содержит 2 группы — 'Объём встроенной памяти' (type=text, единственный вариант, не переключаемая) и 'Цвет корпуса' (type=image, 3 варианта: белый/белый-slug='...-white', розовый/'...-soft-pink', чёрный/'...-black' текущий). Найдено пользователем как непокрытый виджет (TC-INFO-13) — кнопки БЕЗ текста (только картинка), variantButtons (regex на текст) их не ловит, для них используется getVariantGroupButtons(headingText) по соседству с заголовком группы."
+  },
+  "withColorMemoryCondition": {
+    "url": "/product/smartfon-apple-iphone-17-pro-max-2tb-cosmic-orange/",
+    "note": "Подтверждено 05.08.2026 (найдено пользователем): /similar содержит ТРИ группы — 'Объём встроенной памяти' (type=text, 3 варианта: 256/1024/2048 ГБ), 'Цвет корпуса' (type=image, 3 варианта: оранжевый/серебристый/синий), 'Уценённые' (type=defective, ЕДИНСТВЕННЫЙ отличается от первых двух: DOM-заголовок 'Состояние' НЕ совпадает с group.name из API; варианты — обычные <a href>, а не <button>; 'Новый' это ссылка САМА НА СЕБЯ и её нет в products[] ответа API; активный маркер — класс ring-mi-brand-line-brand!, а не border-mi-brand-base-brand-secondary)."
+  },
+  "preorder": {
+    "url": "/product/smartfon-samsung-galaxy-z-flip8-5g-256gb-pink/",
+    "note": "Подтверждено 05.08.2026: /product/{slug} содержит availability='preorder' и preorder={activeFrom:'2026-07-22T12:00:00Z', activeTo:'2026-08-17T18:59:59Z', sellFrom:'2026-08-18T19:00:00Z'} — окно предзаказа активно на момент разведки (сегодня 05.08.2026, до activeTo ещё почти две недели). Вместо 'В корзину'/'Купить сейчас' — единственная кнопка 'Предзаказ' (иконка календаря). Клик для анонимной сессии показывает ТУ ЖЕ модалку логина 'Личный кабинет', что и Купить сейчас/Оформить заказ везде в проекте — НЕ прямой переход на чекаут, вопреки формулировке плана. ВНИМАНИЕ: окно предзаказа истекает 17.08.2026 — если тест начнёт падать после этой даты, найти новый живой пример через GET /api/v3/catalog/products?slug=smartfony&orderBy=sort&pageSize=100&promotion= (постранично) и отфильтровать products[].preorder != null."
+  },
+  "withMixedReviews": {
+    "url": "/product/smartfon-samsung-galaxy-a26-5g-256gb-white-sm-a266-bzwhs/",
+    "note": "Подтверждено 05.08.2026: 6 отзывов, смешанные оценки (5×5★ + 1×4★, statistics подтверждают). Используется для TC-REV-01/02/03 (сортировка) — на totalCount=7 (withReviews/airpods) все отзывы 5★, сортировка 'высокие/низкие' там ничего не меняет по сути. Клик по вкладке сортировки шлёт РЕАЛЬНЫЙ запрос GET /reviews?sort={code}&page=0 (не просто клиентская пересортировка уже загруженных данных) — подтверждено разведкой."
+  },
+  "inStock_alsoOnlyShopwindow_note": "ВАЖНО: fixtures.inStock (smartfon-apple-iphone-15-128gb-pink) тоже имеет onlyShopwindow=true (подтверждено 04.08.2026) — это не баг, а совпадение; для новых тестов на флаг 'На витрине' используй fixtures.onlyShopwindow (конденционер), а fixtures.withDiscount — как заведомо НЕ-витринный пример."
 }

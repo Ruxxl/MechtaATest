@@ -41,6 +41,25 @@ If a `TestPlans/*.md` file or an Excel test-case export disagrees with what you 
 observed, the observation wins — update your understanding, and if the plan document
 itself will mislead a future reader, correct it or note the discrepancy inline.
 
+A previously-recorded `fixtures/products.json` note is a snapshot, not a permanent fact —
+live product data (e.g. which items show up as "related/cross-sell") can genuinely change
+between sessions even for the same slug. Confirmed case: a fixture note dated one day
+claiming a specific product has no cross-sell items was proven wrong the next day by the
+same live API call. When a test built on such a note starts failing in a way the note
+doesn't explain, re-verify the note live before assuming the test logic is wrong — and
+prefer stubbing the API response over depending on a specific live product's data staying
+put (see section 5.5).
+
+**Every test asserts against the API, by default, unconditionally.** This applies even
+when the user's request or the source test-case document doesn't mention API at all —
+e.g. a spreadsheet case that only says "breadcrumbs shouldn't contain Главная" still
+gets written as "breadcrumbs match the `categories` field of `GET /product/{slug}`,
+and also don't contain Главная," not as a UI-only text check. A pure UI-only assertion
+(no `cy.wait('@alias')`/`cy.request()` tied to a real response) is the exception, only
+for things with no backing API field (e.g. "Esc closes the modal"), not the default.
+Before finishing a spec, scan it for `it()` blocks with no API interception/request at
+all and add one unless there is genuinely nothing to check.
+
 ## 2. Bug vs. not-a-bug
 
 Baseline definition (ISTQB/IEEE — use this as the actual test, not a vibe check): a
@@ -134,6 +153,18 @@ them from scratch:
   `/useful/shares/{slug}/`. If a click has zero effect after a generous wait and no
   actionability error was thrown, suspect this class of issue rather than re-trying more
   click variants — pick a different, already-visible value/element instead of fighting it.
+- **Forcing a click through a `pointer-events: none` overlay can crash the Electron
+  renderer**, not just fail the assertion. Confirmed: `cy.get('body').click(x, y, {force:
+  true})` to close a modal by "clicking outside" while the modal's own overlay has set
+  `pointer-events: none` on `<body>` reliably produced "renderer process crashed," killing
+  the rest of that spec file. If closing a modal this way, use a real dismiss path instead
+  (`{esc}` via `cy.get('body').type('{esc}')`, or the modal's own visible close button) —
+  don't reach for `{force: true}` on a `pointer-events: none` ancestor to work around it.
+- **Anonymous/guest sessions hit a login-modal gate on checkout-style actions**
+  ("Купить сейчас," "Оформить заказ") — already established and tested via
+  `add_basket.js`'s `clickCheckoutAnonymously()`/`assertLoginModalShown()`. Don't assume
+  these buttons navigate straight to `/checkout` for an unauthenticated session; assert
+  the login modal appears instead, unless the test explicitly logs in first.
 - **Pagination number buttons don't render** in Cypress (Electron or Chrome-via-Cypress)
   at 2560×1440 even though `window.innerWidth` correctly reports 2560 — but the same page
   renders pagination fine via the claude-in-chrome extension. Verify punits of pagination
@@ -141,6 +172,42 @@ them from scratch:
   clicking a page-number element.
 - **URL encoding**: `cy.url()` shows literal `[`/`]` in query params (e.g.
   `properties[brend][]=apple`), not percent-encoded — don't assert on `%5B%5D`.
+- **`.parents().find('button')` with no filter/scope walks all the way to `<body>`** and
+  `.find('button')` then matches the FIRST matching button ANYWHERE on the page, not
+  necessarily inside the card/widget you meant — clicks silently land on the wrong
+  element and the expected network call never fires (`No request ever occurred`). Fix:
+  `.parents()` in Cypress/jQuery is ordered **closest-ancestor-first**, so
+  `.parents().filter(hasTheThingYouWant).first()` correctly picks the nearest containing
+  card, not `<body>`. Always scope this way when clicking "the icon-button nearest this
+  text" inside a repeated card/list layout.
+- **Anonymous `X-Mechta-Device-Id` (localStorage `user_device_id`) is NOT stable
+  for the first few seconds of a page session** — confirmed it can change between
+  the initial page load and a check just 5 seconds later, with no reload in
+  between (likely a temporary ID replaced by a "real" fingerprint once some
+  tracking script finishes). Any test that adds something anonymous
+  (favorites/compare) and then verifies persistence via a fresh direct API call
+  or a `cy.reload()` risks querying under a DIFFERENT device-id than the one the
+  add actually happened under, producing a false "not persisted" failure that
+  has nothing to do with the feature itself. Prefer verifying the add itself
+  (optimistic UI change + the real intercepted request/response), not
+  reload-survival, for anonymous-session state — or if reload-survival must be
+  tested, do it authenticated (`cy.login()`) where identity isn't drifting.
+- **Cross-origin third-party scripts can fail a test with a useless "Script error."**
+  that Cypress reports as "originated from your application code" with no stack trace,
+  even though it's really a tracking/recs pixel (confirmed: `cdn.diginetica.net`'s
+  recommendation-click tracker attaches a delegated click listener to `document.body`
+  and throws `Cannot read properties of undefined (reading 'recsContainer')` whenever ANY
+  click on the page structurally resembles its own recs widget, unrelated to what you
+  actually clicked). `Cypress.on('uncaught:exception', ...)` message matching on the
+  generic `"Script error"` text does NOT reliably catch these when `chromeWebSecurity`
+  is left at its default `true` — the browser deliberately strips detail from
+  same-page cross-origin script errors. Fix used here: set `chromeWebSecurity: false` in
+  `cypress.config.js` (safe for this test-only project; reveals the *real* underlying
+  error message/stack instead of the generic one), then whitelist the specific real
+  message in `cypress/support/e2e.js`'s shared `uncaught:exception` handler, the same way
+  as every other known-benign third-party error already listed there. Don't try to
+  pattern-match the generic `"Script error."` text — with `chromeWebSecurity: false` you
+  get the real, specific message and can whitelist that instead.
 
 ## 5. Generating positive/negative/non-standard cases — do this for every area by default
 
@@ -171,7 +238,30 @@ established test-design techniques (not ad-hoc guessing):
    intersection** (this is where BUG-002/BUG-004-style "stuck loading, no empty-state
    message" bugs live). Cross-check the resulting count against a direct API call rather
    than eyeballing the list.
-5. **Exploratory heuristics as a prompt when you're out of ideas** (from Rapid Software
+5. **Stub API responses to drive UI state directly — universal, not tied to any one
+   endpoint.** For ANY API field whose value directly controls what renders (a boolean
+   flag, an enum, a count, a nullable object — `onlyShopwindow`, `discount`, `gifts`,
+   `expressDelivery`, `reviewsCount`, literally anything), don't limit coverage to
+   whichever values today's live data happens to have. Use `cy.intercept(...).as(...)` to
+   **stub the response** (same forced-response technique already used for BUG-001 in
+   Акции, forced `500`) and drive the UI through every value that matters:
+   - Each relevant value on its own (a boolean's both states; an enum's every option; a
+     count at `0`, `1`, and "many").
+   - **Combinations**, when a single endpoint exposes multiple independent fields that
+     each drive their own piece of UI (e.g. `/product/{slug}/shipment`'s `todayDelivery` ×
+     `expressDelivery` × `pickupAvailable`) — each flag alone, several true at once, and
+     the all-false/worst case.
+   - **Malformed-but-JSON-valid** values: a field missing entirely, an empty `{}` body, a
+     boolean sent as the string `"true"`/`"false"`, internally-contradictory values
+     (`pickupAvailable: true` with `subdivisions: 0`), a count field sent negative.
+   This catches the class of bug where the frontend does a strict `=== true` check instead
+   of a truthy check, silently trusts an internally-inconsistent response, or renders
+   `undefined`/`NaN` for a missing field — real defects per the bug criterion in section 2,
+   since these are all structurally-valid API responses the frontend is expected to render
+   correctly for, regardless of whether a live product happens to produce them today. See
+   `cypress/e2e/Regress_Test/product_page/product_onlyShopwindow/delivery_combinations.cy.js`
+   for a worked example — apply the same pattern to any other endpoint/area, not just this one.
+6. **Exploratory heuristics as a prompt when you're out of ideas** (from Rapid Software
    Testing / James Bach & Michael Bolton — use these as literal checklists, not vibes):
    - **SFDPOT** — Structure (what's the DOM/API actually made of, any hidden duplicate
      mobile/desktop elements), Function (what is this control actually supposed to do),
@@ -187,7 +277,7 @@ established test-design techniques (not ad-hoc guessing):
      page and the detail page treat the same filter the same way), **P**urpose (does it
      serve the actual business goal), **S**tatutes (legal/regulatory expectations, e.g.
      price/discount display rules).
-6. **Concrete patterns already proven to find real issues in this repo** — reuse these
+7. **Concrete patterns already proven to find real issues in this repo** — reuse these
    shapes: chain UI actions in an order a spreadsheet wouldn't think to write down (sort
    → filter → category, or the reverse of a documented order to check symmetry); pick a
    facet with a non-trivial count and cross-check the resulting count against a direct API

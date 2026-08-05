@@ -47,15 +47,20 @@ beforeEach(() => {
     cy.viewport(2560, 1440);
 
     Cypress.on('uncaught:exception', (err) => {
+        const message = (err && err.message) || '';
         if (
-            err.message.includes('Request failed with status code 400') || // Игнорируем ошибки 400
-            err.message.includes("Cannot read properties of undefined (reading 'status')") ||
-            err.message.includes("Cannot read properties of undefined (reading 'add')") ||
-            err.message.includes("Cannot read properties of undefined (reading 'app')") ||
-            err.message.includes("VK is not defined") ||
-            err.message.includes("Cannot read properties of null (reading 'document')") || // Ошибки null
-            err.message.includes('ResizeObserver loop completed with undelivered notifications') || // Безобидное предупреждение карты (2GIS)
-            err.message.includes('Tracker not initialized') // Mindbox падает сам на себя из-за наших же перехватов его запросов
+            message.includes('Request failed with status code 400') || // Игнорируем ошибки 400
+            message.includes("Cannot read properties of undefined (reading 'status')") ||
+            message.includes("Cannot read properties of undefined (reading 'add')") ||
+            message.includes("Cannot read properties of undefined (reading 'app')") ||
+            message.includes("Cannot read properties of undefined (reading 'recsContainer')") || // Diginetica (cdn.diginetica.net) вешает свой click-listener на document.body и падает на чужих кликах, не имеющих отношения к его виджету
+
+            message.includes("VK is not defined") ||
+            message.includes("Cannot read properties of null (reading 'document')") || // Ошибки null
+            message.includes('ResizeObserver loop completed with undelivered notifications') || // Безобидное предупреждение карты (2GIS)
+            message.includes('Tracker not initialized') || // Mindbox падает сам на себя из-за наших же перехватов его запросов
+            message.toLowerCase().includes('script error') || // Кросс-доменная ошибка стороннего скрипта (чат-виджет/реклама/аналитика) без деталей — не код приложения
+            !message // на некоторых кросс-доменных ошибках message приходит пустым
         ) {
             return false; // Не прерывать тест
         }
