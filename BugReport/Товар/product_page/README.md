@@ -14,11 +14,11 @@
 
 Каждый баг зафиксирован соответствующим автотестом в
 `cypress/e2e/Regress_Test/product_page/product_onlyShopwindow/` (BUG-001) или
-`cypress/e2e/Regress_Test/product_page/cart_crosssell.cy.js` (BUG-002) или
-`cypress/e2e/Regress_Test/product_page/favorites_compare.cy.js` (BUG-003) или
-`cypress/e2e/Regress_Test/product_page/trade_in.cy.js` (BUG-004) или
-`cypress/e2e/Regress_Test/product_page/reviews.cy.js` (BUG-005) или
-`cypress/e2e/Regress_Test/product_page/similar_products.cy.js` (BUG-006, BUG-007) —
+`cypress/e2e/Regress_Test/product_page/product_page/cart_crosssell.cy.js` (BUG-002) или
+`cypress/e2e/Regress_Test/product_page/product_page/favorites_compare.cy.js` (BUG-003) или
+`cypress/e2e/Regress_Test/product_page/product_page/trade_in.cy.js` (BUG-004) или
+`cypress/e2e/Regress_Test/product_page/product_page/reviews.cy.js` (BUG-005) или
+`cypress/e2e/Regress_Test/product_page/product_page/similar_products.cy.js` (BUG-006, BUG-007) —
 тест целенаправленно ожидает правильное поведение и падает, пока баг не исправлен.
 
 ## Что НЕ было оформлено как баг (и почему)
@@ -35,7 +35,7 @@
   «+N бонусов, +N фишек», содержит только текст и безымянную кнопку закрытия — ни ссылки,
   ни кнопки «Подробнее» внутри неё нет. План описывает функциональность, которой не
   существует в реализации — не баг (не сломанная ссылка, а отсутствующая), задокументировано
-  в `cypress/e2e/Regress_Test/product_page/bonus_info.cy.js`.
+  в `cypress/e2e/Regress_Test/product_page/product_page/bonus_info.cy.js`.
 - **TC-BANNER-01..06 (баннер акции на странице товара) — этой функциональности на
   сайте физически нет.** Проверено на 2 товарах с непустым `promotions[]` в
   `/api/v3/product/{slug}` (`naushniki-apple-airpods-4-mxp63zea` — 2 промо,

@@ -12,8 +12,8 @@
 // сопутки, повторная проверка это опровергла) — для позитивного/негативного
 // сравнения "сопутка есть / сопутки нет" используется универсальный приём
 // API-стаббинга (замоканный /relatedWithProviderData), а не конкретный товар.
-import productPage from '../../../support/pageObjects/product_page';
-import { assertLoginModalShown } from '../../../support/helpers/authModal';
+import productPage from '../../../../support/pageObjects/product_page';
+import { assertLoginModalShown } from '../../../../support/helpers/authModal';
 
 const ProductPage = new productPage();
 
@@ -65,7 +65,7 @@ describe('Страница товара: корзина и сопутствую�
             cy.get('#product-add-to-basket').should('include.text', 'В корзине');
         });
 
-        // BugReport/Товар/BUG-002: при ошибке API добавления в корзину панель
+        // BugReport/Товар/product_page/BUG-002: при ошибке API добавления в корзину панель
         // "успеха" всё равно монтируется в DOM (data-state="open", полный состав
         // данных), но остаётся визуально невидимой (сломана анимация появления),
         // а тёмный оверлей блокирует страницу без единого сообщения об ошибке.

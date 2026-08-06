@@ -18,7 +18,7 @@
 //   сверки через принудительный reload.
 // - НАЙДЕН БАГ (см. BUG-003): ошибка API при добавлении бросает необработанное
 //   исключение (unhandled promise rejection) вместо отката UI/сообщения об ошибке.
-import productPage from '../../../support/pageObjects/product_page';
+import productPage from '../../../../support/pageObjects/product_page';
 
 const ProductPage = new productPage();
 const productUrl = '/product/smartfon-apple-iphone-15-128gb-pink/';
@@ -66,7 +66,7 @@ describe('Страница товара: избранное и сравнени�
             ProductPage.assertFavoriteIconState(false);
         });
 
-        // BugReport/Товар/BUG-003: ошибка API при добавлении в избранное роняет
+        // BugReport/Товар/product_page/BUG-003: ошибка API при добавлении в избранное роняет
         // страницу в необработанное исключение вместо отката/сообщения. Тест
         // целенаправленно проверяет ОЖИДАЕМОЕ поведение и падает, документируя баг.
         it('БАГ: ошибка API при добавлении в избранное не должна ронять страницу необработанным исключением — см. BUG-003', () => {

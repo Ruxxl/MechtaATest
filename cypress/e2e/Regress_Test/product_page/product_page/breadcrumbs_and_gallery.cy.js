@@ -15,8 +15,8 @@
 // центрированный просмотр с ценой и кнопками покупки внизу — но кнопки покупки в
 // модалке ДУБЛИРУЮТ id (#product-add-to-basket и т.д.) с кнопками на странице позади
 // модалки, поэтому клики скоупятся внутри модалки, а не глобальным cy.get('#id').
-import productPage from '../../../support/pageObjects/product_page';
-import { assertLoginModalShown } from '../../../support/helpers/authModal';
+import productPage from '../../../../support/pageObjects/product_page';
+import { assertLoginModalShown } from '../../../../support/helpers/authModal';
 
 const ProductPage = new productPage();
 

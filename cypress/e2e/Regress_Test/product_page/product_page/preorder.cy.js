@@ -9,7 +9,7 @@
 // формулировке плана (тот же паттерн, что уже задокументирован для TC-CART-09/
 // TC-INFO-19). Окно предзаказа истекает 17.08.2026 — если протухнет, см. заметку
 // в fixtures/products.json -> preorder про поиск нового живого примера.
-import { assertLoginModalShown } from '../../../support/helpers/authModal';
+import { assertLoginModalShown } from '../../../../support/helpers/authModal';
 
 describe('Страница товара: предзаказ (TC-PREORDER-01/02)', () => {
 

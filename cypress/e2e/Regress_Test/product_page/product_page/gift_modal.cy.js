@@ -5,7 +5,7 @@
 // названиях вкладок это gifts[i].length. Модалка: role="dialog", варианты подарка —
 // button[role="radio"], кнопки "Отмена"/"Выбрать подарок", закрывается кликом вне
 // модалки (нативного крестика в DOM не нашли — возможно, есть, но не через <svg>).
-import productPage from '../../../support/pageObjects/product_page';
+import productPage from '../../../../support/pageObjects/product_page';
 
 const ProductPage = new productPage();
 

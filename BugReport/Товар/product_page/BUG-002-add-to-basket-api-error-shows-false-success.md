@@ -66,7 +66,7 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/product_page/cart_crosssell.cy.js` → тесты на ошибку
+`cypress/e2e/Regress_Test/product_page/product_page/cart_crosssell.cy.js` → тесты на ошибку
 добавления в корзину (TC-CART-03, TC-CART-05) — целенаправленно проверяют ОЖИДАЕМОЕ
 поведение (видимое сообщение об ошибке, отсутствие ложной панели успеха) и падают,
 документируя баг.

@@ -4,7 +4,7 @@
 // подтверждено: у товара с 11 магазинами (fixtures.withReviews) изначально видно 4 +
 // кнопка; у товара с 5 магазинами (fixtures.onlyShopwindow) кнопки нет вообще, видны
 // все сразу (граничный случай — короткий список не нуждается в раскрытии).
-import productPage from '../../../support/pageObjects/product_page';
+import productPage from '../../../../support/pageObjects/product_page';
 
 const ProductPage = new productPage();
 

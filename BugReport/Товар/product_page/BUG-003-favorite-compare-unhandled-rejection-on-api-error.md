@@ -56,7 +56,7 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/product_page/favorites_compare.cy.js` → негативные кейсы
+`cypress/e2e/Regress_Test/product_page/product_page/favorites_compare.cy.js` → негативные кейсы
 ошибки API при добавлении в избранное/сравнение — целенаправленно проверяют ОЖИДАЕМОЕ
 поведение (нет необработанного исключения, есть корректная реакция UI) и падают,
 документируя баг.

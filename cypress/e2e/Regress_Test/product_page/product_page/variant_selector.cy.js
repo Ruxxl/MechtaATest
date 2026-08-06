@@ -31,9 +31,9 @@
 // "2tb-silver"). Список переключаемых групп на товар зафиксирован здесь заранее
 // (подтверждено напрямую через API, не вычисляется динамически внутри теста) —
 // именно это и даёт возможность сделать по одному it() на группу.
-import productPage from '../../../support/pageObjects/product_page';
-import products from '../../../fixtures/products.json';
-import { normalizePrice } from '../../../support/helpers/textUtils';
+import productPage from '../../../../support/pageObjects/product_page';
+import products from '../../../../fixtures/products.json';
+import { normalizePrice } from '../../../../support/helpers/textUtils';
 
 const ProductPage = new productPage();
 

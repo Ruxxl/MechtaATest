@@ -51,5 +51,5 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/product_page/reviews.cy.js` → TC-REV-07 — тест целенаправленно
+`cypress/e2e/Regress_Test/product_page/product_page/reviews.cy.js` → TC-REV-07 — тест целенаправленно
 проверяет ОЖИДАЕМОЕ поведение (модалка логина появляется) и падает, документируя баг.

@@ -4,9 +4,9 @@
 // дисклеймером сверху и ценой + кнопками "Купить сейчас"/"В корзину" снизу. Кнопки
 // покупки внутри дублируют id (#product-add-to-basket и т.д.) с кнопками на
 // странице позади панели — клики скоупятся строго внутри диалога.
-import productPage from '../../../support/pageObjects/product_page';
-import { normalizePrice } from '../../../support/helpers/textUtils';
-import { assertLoginModalShown } from '../../../support/helpers/authModal';
+import productPage from '../../../../support/pageObjects/product_page';
+import { normalizePrice } from '../../../../support/helpers/textUtils';
+import { assertLoginModalShown } from '../../../../support/helpers/authModal';
 
 const ProductPage = new productPage();
 

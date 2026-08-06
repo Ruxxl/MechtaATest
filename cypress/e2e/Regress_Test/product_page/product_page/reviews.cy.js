@@ -8,7 +8,7 @@
 //   withReviews (AirPods) все 7 отзывов 5★, там "высокие/низкие" ничего не меняют
 //   по сути; используется fixtures.withMixedReviews (5×5★+1×4★).
 // - TC-REV-04 ("Показать все отзывы") — этой функциональности НЕТ на сайте, см.
-//   BugReport/Товар/README.md. Товар с totalPages=2 (AirPods, 7 отзывов, perPage=6)
+//   BugReport/Товар/product_page/README.md. Товар с totalPages=2 (AirPods, 7 отзывов, perPage=6)
 //   показывает только первые 6, без единого способа увидеть 7-й — ни кнопки, ни
 //   пагинации. Не баг, а отсутствующая фича — тест не пишется.
 // - Лайк/дизлайк (TC-REV-05..08): устойчивые id "#product-review-like-{index}" /
@@ -33,8 +33,8 @@
 //   это тоже должно совпадать с данными ИМЕННО открытого отзыва. У закрывающей
 //   CSS-анимации диалога заметная длительность — до ~1.5с, иначе проверка "закрылось"
 //   даёт ложный "ещё открыто".
-import { assertLoginModalShown } from '../../../support/helpers/authModal';
-import productPage from '../../../support/pageObjects/product_page';
+import { assertLoginModalShown } from '../../../../support/helpers/authModal';
+import productPage from '../../../../support/pageObjects/product_page';
 
 const ProductPage = new productPage();
 
@@ -120,7 +120,7 @@ describe('Страница товара: рейтинг и отзывы (TC-REV-
             });
         });
 
-        // BugReport/Товар/BUG-005: анонимный клик получает реальный 401 от API, но
+        // BugReport/Товар/product_page/BUG-005: анонимный клик получает реальный 401 от API, но
         // фронтенд никак не реагирует. Тест целенаправленно проверяет ОЖИДАЕМОЕ
         // поведение (модалка логина, как везде в проекте) и падает, документируя баг.
         it('TC-REV-07 / БАГ: лайк неавторизованным пользователем должен показать модалку логина — см. BUG-005', () => {

@@ -9,7 +9,7 @@
 //   не реализуются буквально, см. "Что НЕ было оформлено как баг" в README области.
 // - Числа сверяются с GET /api/v3/product/{slug}/offers (bonuses, chips) — тем же
 //   источником, что уже использует check_product_fishki().
-import productPage from '../../../support/pageObjects/product_page';
+import productPage from '../../../../support/pageObjects/product_page';
 
 const ProductPage = new productPage();
 
