@@ -460,12 +460,49 @@ class productPage {
             .click({ force: true });
     }
 
+    // Разведка 2026-08-05: cy.contains('button', 'В корзину')/'Продолжить' по ВСЕЙ
+    // странице неоднозначны, если панель открыта НЕ основной кнопкой страницы
+    // (например, кликом по карточке "Похожие товары") — фоновая #product-add-to-basket
+    // всё ещё показывает тот же текст "В корзину" и стоит РАНЬШЕ в DOM, чем портал
+    // панели, поэтому .contains() (берёт только первое совпадение) ловит фоновую
+    // кнопку. Настоящая кнопка панели найдена явным исключением id и фильтром по
+    // реальной видимости; корень панели — это её 2-й родитель (<div class="fixed
+    // bg-default divide-y ...">, подтверждено прямым обходом DOM), внутри которого
+    // однозначно лежат и "Продолжить", и крестик закрытия.
+    get crossSellPanelRoot() {
+        return cy.get('button')
+            .filter((i, el) => el.textContent.trim() === 'В корзину' && el.id !== 'product-add-to-basket' && el.getBoundingClientRect().width > 0)
+            .first()
+            .parent()
+            .parent();
+    }
+
+    // ВАЖНО (разведка 2026-08-05): БЕЗ force:true и без scrollIntoView() — панель
+    // сопутки position:fixed, у неё нет обычного "прокрутить и увидеть" сценария.
+    // force:true отключает у Cypress ВСЕ проверки actionability разом (в т.ч.
+    // "элемент не перекрыт"), из-за чего клик по кнопке, ещё не докрасившейся после
+    // открытия панели (или временно перекрытой), уходил в пустоту без единой
+    // ошибки в Cypress-логе — панель оставалась открытой. Сначала это выглядело
+    // как реальный баг сайта (в консоли параллельно летела ошибка
+    // "Cannot read properties of undefined (reading 'add')"), но настоящий клик
+    // мышью в браузере закрывает панель корректно — обычный НЕ форсированный
+    // click() с родным Cypress retry/actionability оказался единственно надёжным.
     clickCrossSellContinue() {
-        cy.contains('button', 'Продолжить').click();
+        this.crossSellPanelRoot.contains('button', 'Продолжить').click();
     }
 
     clickCrossSellGoToCart() {
-        cy.contains('button', 'В корзину').click();
+        this.crossSellPanelRoot.contains('button', 'В корзину').click();
+    }
+
+    // Панель сопутки НЕ реагирует на Esc (не role="dialog", а боковая панель без
+    // своего keydown-обработчика — в отличие от модалок подарка/характеристик/
+    // галереи). Закрывается только явным крестиком, скоуп — корень панели (см. выше),
+    // а не вся страница (иначе можно словить чужой X, geometrическая эвристика по
+    // позиции на экране оказалась ненадёжной — один из первых вариантов этого метода
+    // кликал по постороннему X и панель оставалась открытой).
+    closeCrossSellPanel() {
+        this.crossSellPanelRoot.find('button').filter((i, el) => !!el.querySelector('[class*="i-ph:x"]')).first().click();
     }
 
     // Немедленный cy.visit('/basket/') сразу после клика "В корзину" иногда
@@ -503,6 +540,91 @@ class productPage {
 
     openGiftModal() {
         cy.get(selectors.product_gift_button).should('be.visible').click();
+    }
+
+    // --- Карусель "Похожие товары" (TC-SIM-01..10) ---
+    // Разведка 2026-08-05: ДРУГОЙ виджет, чем /similar (тот — переключение вариантов
+    // по характеристике/состоянию, уже покрыт в variant_selector.cy.js/page_blocks.cy.js).
+    // Источник данных — /api/v3/product/{slug}/alternatives (products[], включая
+    // ДРУГИЕ бренды — подтверждено на живом товаре: iPhone 15 → Xiaomi/Samsung в
+    // выдаче). Показывается НЕ на каждом товаре (напр. отсутствует на AirPods).
+    // Технически обёрнут в стороннюю Diginetica-разметку (digi-recs-type=
+    // "alternatives", strategy-name), но сами данные карточек — с бэкенда mechta,
+    // не с diginetica. В браузерном инструменте (chrome extension) виджет иногда
+    // не рендерится вовсе — похоже на блокировку cdn.diginetica.net на уровне
+    // расширения/privacy-фильтра; в Cypress/Electron рендерится стабильно.
+    // DOM дублирован mobile/desktop (стандартный паттерн проекта, см. skill п.4) —
+    // фильтруем по реальной видимости. У каждой карточки 4 кнопки в фиксированном
+    // порядке: [0] триггер тултипа чипсы (не всегда есть), [1] сравнение
+    // (i-ph:scales), [2] избранное (i-ph:heart), [3] В корзину (i-ph:shopping-cart).
+    // Клик "В корзину" на карточке открывает ТУ ЖЕ панель сопутки, что и обычная
+    // кнопка на странице (см. interceptRelatedProducts/waitRelatedProducts выше) —
+    // relatedWithProviderData уходит для слага ДОБАВЛЕННОГО товара, а не текущей
+    // страницы (подтверждено разведкой: клик на карточку iPhone 15 Black вызвал
+    // relatedWithProviderData именно для .../iphone-15-128gb-black/).
+    interceptAlternatives() {
+        cy.intercept('GET', '**/api/v3/product/*/alternatives').as('alternatives');
+    }
+
+    waitAlternatives() {
+        return cy.wait('@alternatives', { timeout: 20000 });
+    }
+
+    get similarProductsHeading() {
+        return cy.contains('h2, h3', 'Похожие товары');
+    }
+
+    similarProductCards() {
+        return cy.get('[product-id]').filter((i, el) => el.getBoundingClientRect().width > 0);
+    }
+
+    similarProductCard(index) {
+        return this.similarProductCards().eq(index);
+    }
+
+    similarProductCardHref(index) {
+        return this.similarProductCard(index).find('a[href*="/product/"]').first().invoke('attr', 'href');
+    }
+
+    clickSimilarProductLink(index) {
+        this.similarProductCard(index).find('a[href*="/product/"]').first().click();
+    }
+
+    clickSimilarProductAddToCart(index) {
+        this.similarProductCard(index).find('button').filter((i, el) => !!el.querySelector('[class*="i-ph:shopping-cart"]')).first().click({ force: true });
+    }
+
+    // Разведка 2026-08-05 (по просьбе пользователя): карточка похожего товара —
+    // название (<a> со ссылкой на /product/{slug}/), картинка (img src содержит id
+    // из images[0]), цена (span.text-no-wrap, формат "443 888 ₸" — сравниваем через
+    // normalizePrice), рейтинг звёздами + счётчик отзывов. КРИТИЧНО подтверждено
+    // напрямую в DOM: блок рейтинга (звёзды + число + "(N)") ВООБЩЕ НЕ рендерится,
+    // если reviewsCount=0 (Vue v-if, не просто visibility:hidden) — сравнивать
+    // звёзды имеет смысл только когда reviewsCount>0. Когда averageRating=0, но
+    // reviewsCount>0, число перед звёздами пустое, а звёзды — серые
+    // (svg.text-mi-line-generic вместо svg.text-mi-text-warning). Заполненных
+    // (svg.text-mi-text-warning, видимых) звёзд ровно Math.round(averageRating) —
+    // подтверждено на карточках с рейтингом 5 (5 видимых) и 0 (0 видимых, все 5
+    // серые + скрытый шаблон-иконка).
+    // ВАЖНО: каждая проверка ниже начинается СВОИМ вызовом similarProductCard(index),
+    // а не переиспользует одну сохранённую переменную — повторные .method() на ОДНОЙ
+    // и той же захваченной Cypress-цепочке продолжают её с места последней команды
+    // (а не перезапускают от исходного элемента), из-за чего .contains() после
+    // .and(...) получал строку вместо DOM и падал с "requires a DOM element".
+    assertSimilarProductCardMatchesData(index, product) {
+        this.similarProductCard(index).find('a[href*="/product/"]').first()
+            .should('have.attr', 'href')
+            .and('include', `/product/${product.slug}/`);
+        this.similarProductCard(index).contains('a[href*="/product/"]', product.name).should('be.visible');
+        this.similarProductCard(index).find('img').first().should('have.attr', 'src').and('include', product.images[0].split('/').pop());
+        this.similarProductCard(index).find('[class*="text-no-wrap"]').first().invoke('text').then((text) => {
+            expect(normalizePrice(text), `цена карточки товара "${product.name}"`).to.eq(String(product.prices.finalPrice));
+        });
+        if (product.rating.reviewsCount > 0) {
+            this.similarProductCard(index).find('small.text-mi-text-secondary').should('contain.text', `(${product.rating.reviewsCount})`);
+            this.similarProductCard(index).find('svg.text-mi-text-warning').filter((i, el) => el.getBoundingClientRect().width > 0)
+                .should('have.length', Math.round(product.rating.averageRating));
+        }
     }
 
     get giftModalTabs() {

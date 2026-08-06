@@ -48,12 +48,14 @@ beforeEach(() => {
 
     Cypress.on('uncaught:exception', (err) => {
         const message = (err && err.message) || '';
+        const stack = (err && err.stack) || '';
         if (
             message.includes('Request failed with status code 400') || // Игнорируем ошибки 400
             message.includes("Cannot read properties of undefined (reading 'status')") ||
             message.includes("Cannot read properties of undefined (reading 'add')") ||
             message.includes("Cannot read properties of undefined (reading 'app')") ||
             message.includes("Cannot read properties of undefined (reading 'recsContainer')") || // Diginetica (cdn.diginetica.net) вешает свой click-listener на document.body и падает на чужих кликах, не имеющих отношения к его виджету
+            stack.includes('diginetica.net') || // тот же Diginetica click-tracker падает с РАЗНЫМИ сообщениями на разных кликах (напр. "reading 'params'" в блоке "Похожие товары") — вайтлистим по источнику скрипта, а не по конкретной строке, чтобы не гоняться за каждым новым вариантом сообщения
 
             message.includes("VK is not defined") ||
             message.includes("Cannot read properties of null (reading 'document')") || // Ошибки null

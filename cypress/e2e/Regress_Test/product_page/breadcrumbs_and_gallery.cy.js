@@ -16,6 +16,7 @@
 // модалке ДУБЛИРУЮТ id (#product-add-to-basket и т.д.) с кнопками на странице позади
 // модалки, поэтому клики скоупятся внутри модалки, а не глобальным cy.get('#id').
 import productPage from '../../../support/pageObjects/product_page';
+import { assertLoginModalShown } from '../../../support/helpers/authModal';
 
 const ProductPage = new productPage();
 
@@ -84,6 +85,31 @@ describe('Страница товара: хлебные крошки и гале
         });
     });
 
+    // TC-INFO-16 (клик по бренду при недоступном роуте → 404) НЕ автоматизируется:
+    // разведкой 2026-08-06 подтверждено, что ссылка ведёт на ДРУГОЙ ДОМЕН —
+    // https://www.mechta.kz/brands/{slug}/ (продакшн, не текущий preprod-хост
+    // pp.yc.mechta.kz) — это полный кросс-доменный переход, а не внутренний
+    // SPA-роут. В отличие от TC-BC-03/TC-SIM-02 (где "недоступный роут" был
+    // смоделирован мокингом API того же preprod-домена), здесь нет способа
+    // перехватить/сломать загрузку страницы на чужом домене без cy.origin() и
+    // реального обращения к продакшену — не автоматизируется в рамках этого
+    // preprod-проекта, аналогично TC-TRADEIN-07 (сам факт кросс-доменности —
+    // не баг, а архитектурная особенность).
+    describe('Ссылка на бренд (TC-INFO-15) ↔ поле brand из /product/{slug}', () => {
+
+        it('TC-INFO-15: ссылка на бренд ведёт на страницу бренда, сверено со slug из API', () => {
+            ProductPage.interceptRequests();
+            cy.visit(productUrl);
+            cy.wait('@product', { timeout: 20000 }).then((interception) => {
+                const { brand } = interception.response.body;
+                expect(brand, 'у товара должен быть указан бренд').to.exist;
+                cy.get('#product-characteristic-value-1')
+                    .should('have.attr', 'href')
+                    .and('include', `/brands/${brand.slug}/`);
+            });
+        });
+    });
+
     describe('Галерея изображений (TC-GAL-*) ↔ поле images из /product/{slug}', () => {
 
         it('ПОЗИТИВ: количество миниатюр совпадает с images.length из API', () => {
@@ -140,6 +166,24 @@ describe('Страница товара: хлебные крошки и гале
             cy.get('[role="dialog"]').should('be.visible');
             cy.get('body').type('{esc}');
             cy.get('[role="dialog"]').should('not.exist');
+        });
+
+        // TC-GAL-09 (уточнено разведкой 2026-08-06): для анонимной сессии клик
+        // "Купить сейчас" показывает модалку логина БЕЗ ухода со страницы товара
+        // (URL не меняется) — тот же паттерн, что и TC-CART-09/10, TC-PREORDER-01/02,
+        // TC-INFO-19. Буквально смоделировать "недоступный роут чекаута" для анонима
+        // невозможно — модалка логина перехватывает раньше, чем происходит любое
+        // реальное обращение к чекауту, поэтому проверяем соседний инвариант
+        // (модалка логина появляется) вместо буквального сценария из плана.
+        it('TC-GAL-09 (уточнено разведкой): "Купить сейчас" из модалки галереи для анонима показывает модалку логина', () => {
+            cy.visit(productUrl);
+            ProductPage.openGalleryModal();
+            cy.get('[role="dialog"]')
+                .find('button')
+                .filter((i, el) => el.textContent.trim() === 'Купить сейчас' && el.getBoundingClientRect().width > 0)
+                .first()
+                .click();
+            assertLoginModalShown();
         });
 
         it('TC-GAL-10: "В корзину" из модалки галереи реально добавляет товар — сверка через /basket/', () => {

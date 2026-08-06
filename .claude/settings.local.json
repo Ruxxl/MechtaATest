@@ -101,7 +101,27 @@
       "Bash(command -v brew)",
       "Bash(brew --version)",
       "Bash(xcode-select -p)",
-      "Bash(/usr/bin/git push *)"
+      "Bash(/usr/bin/git push *)",
+      "Bash(find / -iname \"*Mechta*ProductPage*\" -not -path \"*/node_modules/*\")",
+      "Read(//Users/ruslanisin/**)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/sim_run3.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/sim_run4.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/sim_run5.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/sim_run6.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/sim_run7.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/sim_run7b.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/sim_run8.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/rel_run1.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/rel_run2.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/rel_run3.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/rel_run4.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/cart_regression.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/bug007_run1.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/bug007_run2.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/bug007_run3.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/gal09_run2.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/gal09_run3.log)",
+      "Bash(tee /private/tmp/claude-501/-Users-ruslanisin-Documents-MechtaATest/a86448f5-1a40-4e87-b9e8-ac531cc5be75/scratchpad/gal09_run4.log)"
     ]
   }
 }

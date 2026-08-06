@@ -9,14 +9,17 @@
 | [BUG-003](./BUG-003-favorite-compare-unhandled-rejection-on-api-error.md) | Ошибка API (500) при добавлении в избранное/сравнение вызывает необработанное исключение (unhandled promise rejection) вместо отката UI/сообщения об ошибке | Medium | Подтверждён |
 | [BUG-004](./BUG-004-tradein-otsenit-ustroystvo-unhandled-exception.md) | Клик "Оценить устройство" в Trade-In иногда бросает необработанное исключение (`tradeInWithGood`) и не открывает сторонний виджет — подтверждено в реальном Chrome, воспроизводится нестабильно | Medium | Подтверждён (нестабильно) |
 | [BUG-005](./BUG-005-review-vote-anonymous-401-silent.md) | Лайк/дизлайк отзыва анонимным пользователем — API корректно возвращает 401, но фронтенд никак не реагирует (нет модалки логина, нет сообщения, DOM не меняется вообще) | Medium | Подтверждён |
+| [BUG-006](./BUG-006-similar-product-blank-page-on-api-error.md) | Переход на карточку похожего товара при ошибке API целевого товара (не настоящий 404) — область контента полностью пустая, вместо страницы "не найдено" | Medium | Подтверждён |
+| [BUG-007](./BUG-007-alternatives-reviewscount-mismatch.md) | `/alternatives` (карточки "Похожие товары") показывает несуществующие отзывы/неверный рейтинг — рассинхронизировано с реальным `/reviews` того же товара (баг бэкенда, не фронтенда) | Low-Medium | Подтверждён |
 
 Каждый баг зафиксирован соответствующим автотестом в
 `cypress/e2e/Regress_Test/product_page/product_onlyShopwindow/` (BUG-001) или
 `cypress/e2e/Regress_Test/product_page/cart_crosssell.cy.js` (BUG-002) или
 `cypress/e2e/Regress_Test/product_page/favorites_compare.cy.js` (BUG-003) или
 `cypress/e2e/Regress_Test/product_page/trade_in.cy.js` (BUG-004) или
-`cypress/e2e/Regress_Test/product_page/reviews.cy.js` (BUG-005) — тест целенаправленно
-ожидает правильное поведение и падает, пока баг не исправлен.
+`cypress/e2e/Regress_Test/product_page/reviews.cy.js` (BUG-005) или
+`cypress/e2e/Regress_Test/product_page/similar_products.cy.js` (BUG-006, BUG-007) —
+тест целенаправленно ожидает правильное поведение и падает, пока баг не исправлен.
 
 ## Что НЕ было оформлено как баг (и почему)
 
