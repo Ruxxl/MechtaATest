@@ -1,3 +1,5 @@
+import { formatRuDateRange } from '../../helpers/promotionsApi';
+
 // Page Object для каталога акций (/useful/shares/).
 // Селекторы подтверждены прямым исследованием реального preprod 2026-08-03.
 class CatalogPage {
@@ -84,6 +86,28 @@ class CatalogPage {
 
     clickNthPromoCard(index) {
         cy.get('h3').eq(index).click();
+    }
+
+    // Карточка акции в списке — это <a href="/useful/shares/{slug}/">, обёртывающая
+    // <img>, <h3> (заголовок) и два <p> (даты и previewText). Ищем по href, а не по
+    // тексту заголовка — устойчиво даже если два разных заголовка совпадут текстом.
+    getCardBySlug(slug) {
+        return cy.get(`a[href="/useful/shares/${slug}/"]`);
+    }
+
+    // Полная сверка ВСЕХ полей карточки конкретной акции (объект из ответа
+    // GET /promotions) с тем, что реально отрисовано в списке: заголовок, картинка
+    // (src совпадает с API 1-в-1, без CDN-трансформации — подтверждено разведкой
+    // 2026-08-07), диапазон дат в человекочитаемом формате и previewText-подзаголовок.
+    assertCardMatchesApi(promo) {
+        this.getCardBySlug(promo.slug).should('be.visible').within(() => {
+            cy.get('h3').should('have.text', promo.title);
+            cy.get('img').should('have.attr', 'src', promo.image);
+            cy.contains('p', formatRuDateRange(promo.fromDate, promo.toDate)).should('be.visible');
+            if (promo.previewText) {
+                cy.contains('p', promo.previewText).should('be.visible');
+            }
+        });
     }
 }
 

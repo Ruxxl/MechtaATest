@@ -45,5 +45,5 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/orders.cy.js` — тест ожидает `<h1>` с
+`cypress/e2e/main_test/cabinet/orders.cy.js` — тест ожидает `<h1>` с
 текстом «Заказы» и падает, пока баг не исправлен.

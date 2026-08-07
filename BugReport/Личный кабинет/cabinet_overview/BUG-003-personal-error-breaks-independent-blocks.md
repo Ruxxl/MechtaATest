@@ -80,7 +80,7 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/cabinet_overview.cy.js` — тесты
+`cypress/e2e/main_test/cabinet/cabinet_overview.cy.js` — тесты
 «GET /v2/personal с result:false не крашит страницу» и
 «GET /v2/personal — таймаут/500 не роняет всю страницу» целенаправленно
 ожидают, что блок «Мечта ГИД» останется видимым, и падают, пока баг не

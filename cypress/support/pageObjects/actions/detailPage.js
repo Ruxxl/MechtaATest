@@ -1,3 +1,5 @@
+import { formatRuDateRange } from '../../helpers/promotionsApi';
+
 // Page Object для детальной страницы акции (/useful/shares/{slug}/).
 class DetailPage {
 
@@ -41,6 +43,22 @@ class DetailPage {
 
     closeDetailsModal() {
         cy.get('body').type('{esc}');
+    }
+
+    // Не у каждой акции есть баннерный блок с кнопкой "Подробнее" (подтверждено:
+    // "bonusy-za-otzyv" — акция с несколькими категориями — баннера не имеет вообще),
+    // поэтому перед открытием модалки проверяем её наличие через jQuery-условие,
+    // а не полагаемся на cy.contains(), которая упадёт с таймаутом, если её нет.
+    hasDetailsButton() {
+        return cy.get('body').then(($body) => $body.find('a:contains("Подробнее"), button:contains("Подробнее")').length > 0);
+    }
+
+    // Сверяет диапазон дат в модалке "Подробнее" с данными из API (используется
+    // сквозным обходом всех акций — assertBannerDatesMatchApi).
+    assertBannerDatesMatchApi(promo) {
+        this.openDetailsModal();
+        cy.contains(formatRuDateRange(promo.fromDate, promo.toDate)).should('be.visible');
+        this.closeDetailsModal();
     }
 
     // Чекбоксы фильтра — не нативные <input type="checkbox">, а кастомная кнопка

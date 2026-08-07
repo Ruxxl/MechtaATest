@@ -259,7 +259,7 @@ established test-design techniques (not ad-hoc guessing):
    `undefined`/`NaN` for a missing field — real defects per the bug criterion in section 2,
    since these are all structurally-valid API responses the frontend is expected to render
    correctly for, regardless of whether a live product happens to produce them today. See
-   `cypress/e2e/Regress_Test/product_page/product_onlyShopwindow/delivery_combinations.cy.js`
+   `cypress/e2e/main_test/product_page/product_onlyShopwindow/delivery_combinations.cy.js`
    for a worked example — apply the same pattern to any other endpoint/area, not just this one.
 6. **Exploratory heuristics as a prompt when you're out of ideas** (from Rapid Software
    Testing / James Bach & Michael Bolton — use these as literal checklists, not vibes):
@@ -336,7 +336,7 @@ can be run and reported on independently. Concrete, testable-in-this-stack insta
 - Run the new/changed spec **2–3 times in a row** (`npx cypress run --spec <path>
   --headless`) to catch flakiness before reporting success — this suite has repeatedly
   surfaced race conditions that only show up intermittently.
-- Run the full sibling folder together (e.g. `cypress/e2e/Regress_Test/actions/*.cy.js`)
+- Run the full sibling folder together (e.g. `cypress/e2e/main_test/actions/*.cy.js`)
   once, to confirm the new spec doesn't interfere with previously-passing ones.
 - Delete throwaway probe specs (`zzz_probe_*.cy.js`) once recon is finished — they are
   scratch work, not part of the suite.

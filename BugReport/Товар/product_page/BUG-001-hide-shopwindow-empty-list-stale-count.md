@@ -59,7 +59,7 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/product_page/product_onlyShopwindow/availability.cy.js` →
+`cypress/e2e/main_test/product_page/product_onlyShopwindow/availability.cy.js` →
 тест на пустой результат «Скрыть витрину» для товара, где все магазины витринные —
 целенаправленно проверяет ОЖИДАЕМОЕ поведение (обновлённый счётчик или сообщение) и
 падает, документируя баг.

@@ -47,5 +47,5 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/bonuses.cy.js` — тест ожидает `<h1>` с
+`cypress/e2e/main_test/cabinet/bonuses.cy.js` — тест ожидает `<h1>` с
 текстом «Бонусы и фишки» и падает, пока баг не исправлен.

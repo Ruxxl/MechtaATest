@@ -1,1 +1,8 @@
-{}
+{
+  "BugReport/Акции/BUG-006-expiring-sort-order-reversed.md": {
+    "id": "BUG-006",
+    "jiraKey": "AS-4540",
+    "area": ".",
+    "createdAt": "2026-08-07T11:59:43.221Z"
+  }
+}

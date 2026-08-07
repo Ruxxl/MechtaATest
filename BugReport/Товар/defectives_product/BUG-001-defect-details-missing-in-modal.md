@@ -56,7 +56,7 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/product_page/defectives_product/catalog_and_card.cy.js` →
+`cypress/e2e/main_test/product_page/defectives_product/catalog_and_card.cy.js` →
 "TC-011 / БАГ: раскрытая 'Причина уценки' должна показывать поле 'Дефекты'
 (defectDetails)" — тест целенаправленно проверяет ОЖИДАЕМОЕ поведение и падает,
 документируя баг.

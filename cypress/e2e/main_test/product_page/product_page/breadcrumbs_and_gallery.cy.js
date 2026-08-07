@@ -1,6 +1,6 @@
 // Блок 1 из Mechta_ProductPage_TestCases.xlsx: хлебные крошки (TC-BC-*) и галерея
 // изображений (TC-GAL-*). Общие для ЛЮБОГО товара (не привязаны к одному флагу),
-// поэтому лежат на уровень выше, в cypress/e2e/Regress_Test/product_page/, а не
+// поэтому лежат на уровень выше, в cypress/e2e/main_test/product_page/, а не
 // внутри product_onlyShopwindow/. См. TestPlans/PDP-testcases-coverage.md.
 //
 // КАЖДЫЙ шаг сверяется с API GET /api/v3/product/{slug}: хлебные крошки — с полем

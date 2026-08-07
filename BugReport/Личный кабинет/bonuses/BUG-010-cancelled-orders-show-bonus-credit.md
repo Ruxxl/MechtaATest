@@ -67,6 +67,6 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/bonuses.cy.js` — тест сверяет список
+`cypress/e2e/main_test/cabinet/bonuses.cy.js` — тест сверяет список
 отменённых `order_id` из `orders_list` с их отсутствием (или нулевым
 начислением) в `bonuses-history` и падает, пока баг не исправлен.

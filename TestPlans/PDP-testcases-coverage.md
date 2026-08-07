@@ -4,9 +4,9 @@
 листы `Test Cases` + `Сводка`). Изначально сверено 2026-08-04, обновлено 2026-08-04
 после реализации блока 1 (breadcrumbs/gallery/gift/characteristics).
 
-Действующее покрытие: `cypress/e2e/Regress_Test/product_page.cy.js` (старый, общий) +
-`cypress/e2e/Regress_Test/product_page/product_onlyShopwindow/*.cy.js` (флаг "На
-витрине") + `cypress/e2e/Regress_Test/product_page/{breadcrumbs_and_gallery,gift_modal,
+Действующее покрытие: `cypress/e2e/main_test/product_page.cy.js` (старый, общий) +
+`cypress/e2e/main_test/product_page/product_onlyShopwindow/*.cy.js` (флаг "На
+витрине") + `cypress/e2e/main_test/product_page/{breadcrumbs_and_gallery,gift_modal,
 characteristics_panel,cart_crosssell,favorites_compare,bonus_info,variant_selector}.cy.js`.
 
 Статусы: **✅ Покрыт** / **🟡 Частично** / **❌ Не покрыт**.
@@ -227,7 +227,7 @@ text).filter(...)` возвращает только ПЕРВОЕ совпаде
 ## План закрытия (по приоритету из файла)
 
 Порядок реализации — по `Приоритет` из исходного файла (High → Medium → Low), новые
-файлы под `cypress/e2e/Regress_Test/product_page/`, по одному на блок функционала
+файлы под `cypress/e2e/main_test/product_page/`, по одному на блок функционала
 (`gallery.cy.js`, `gift_and_bundle.cy.js`, `characteristics_panel.cy.js`,
 `cart_crosssell.cy.js`, `favorites_compare.cy.js`, `reviews_interactions.cy.js`,
 `similar_related.cy.js`, `misc_blocks.cy.js` для баннера/бонусов/trade-in/предзаказа).

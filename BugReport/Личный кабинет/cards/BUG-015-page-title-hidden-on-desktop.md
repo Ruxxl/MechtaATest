@@ -60,6 +60,6 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/cards.cy.js` — тест ожидает видимый
+`cypress/e2e/main_test/cabinet/cards.cy.js` — тест ожидает видимый
 (`display` ≠ `none`) `<h1>` с текстом «Мои карты» на десктопном вьюпорте и
 падает, пока баг не исправлен.

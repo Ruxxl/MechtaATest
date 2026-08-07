@@ -55,6 +55,6 @@ UI.
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/product_page/product_page/similar_products.cy.js` → TC-SIM-02 — тест
+`cypress/e2e/main_test/product_page/product_page/similar_products.cy.js` → TC-SIM-02 — тест
 целенаправленно проверяет ОЖИДАЕМОЕ поведение (страница 404 с сообщением) и падает,
 документируя баг.

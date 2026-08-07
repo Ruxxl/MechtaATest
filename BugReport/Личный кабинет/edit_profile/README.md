@@ -20,7 +20,7 @@ BUG-020..023 и BUG-027 — они заняты параллельной сес�
 
 ## Автотест
 
-`cypress/e2e/Regress_Test/cabinet/edit_profile.cy.js`, page object
+`cypress/e2e/main_test/cabinet/edit_profile.cy.js`, page object
 `cypress/support/pageObjects/editProfilePage.js`, API-хелперы
 `getProfile`/`putProfile`/`profileFieldsMap` в `cabinetApi.js`.
 

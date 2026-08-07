@@ -42,6 +42,6 @@ severity понижена до Low. Ценность — фронтенд не �
 
 ## Зафиксировано автотестом
 
-`cypress/e2e/Regress_Test/product_page/defectives_product/catalog_filters.cy.js`
+`cypress/e2e/main_test/product_page/defectives_product/catalog_filters.cy.js`
 — тест `FLT-032 / БАГ` целенаправленно ожидает отсутствие отрицательного
 числа и падает, пока не добавлена защита.

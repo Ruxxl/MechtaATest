@@ -68,7 +68,7 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/product_page/product_page/similar_products.cy.js` → describe
+`cypress/e2e/main_test/product_page/product_page/similar_products.cy.js` → describe
 "Согласованность рейтинга карточек с реальными отзывами (BUG-007)" — берёт первые
 до 8 карточек из `/alternatives` с `rating.reviewsCount > 0`, для каждой делает
 прямой `cy.request` к `GET /api/v3/product/{slug}/reviews` и сверяет

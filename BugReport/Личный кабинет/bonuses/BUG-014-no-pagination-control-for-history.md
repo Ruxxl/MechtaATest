@@ -57,7 +57,7 @@ DOM (`document.querySelectorAll('button, [role="button"]')` не содержи�
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/bonuses.cy.js` — тесты пагинации
+`cypress/e2e/main_test/cabinet/bonuses.cy.js` — тесты пагинации
 («Кнопка «Показать ещё» отображается...», «Клик «Показать ещё» отправляет
 запрос со page=2») ожидают наличие элемента пагинации и падают, пока баг не
 исправлен.

@@ -5,7 +5,7 @@ const ProductPage = new productPage();
 
 // Полная проверка блоков страницы товара "На витрине" (cypress/fixtures/products.json
 // -> onlyShopwindow), сверенных с соответствующими API. Часть проверок пересекается
-// с cypress/e2e/Regress_Test/product_page.cy.js (по просьбе — эта папка тестирует
+// с cypress/e2e/main_test/product_page.cy.js (по просьбе — эта папка тестирует
 // страницу целиком, заякорившись именно на витринном товаре), часть — новое покрытие
 // по TestPlans/PDP-product-page-testplan.md (бонусы, полный список характеристик,
 // виджет вариантов, описание, согласованность отзывов).

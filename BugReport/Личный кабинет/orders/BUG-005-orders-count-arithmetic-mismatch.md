@@ -63,6 +63,6 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/orders.cy.js` — тест сверяет арифметику
+`cypress/e2e/main_test/cabinet/orders.cy.js` — тест сверяет арифметику
 `orders_count` через прямой API-запрос и падает, пока расхождение не будет
 объяснено/исправлено.

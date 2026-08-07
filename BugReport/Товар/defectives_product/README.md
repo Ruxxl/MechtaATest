@@ -11,7 +11,7 @@
 Нумерация багов в этой папке своя, с BUG-001, независимо от `../product_page/`.
 
 Зафиксирован автотестом в
-`cypress/e2e/Regress_Test/product_page/defectives_product/catalog_and_card.cy.js`
+`cypress/e2e/main_test/product_page/defectives_product/catalog_and_card.cy.js`
 (BUG-001) — тест целенаправленно ожидает правильное поведение и падает, пока баг
 не исправлен.
 

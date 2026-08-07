@@ -70,6 +70,6 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/orders.cy.js` — тест сверяет сумму на
+`cypress/e2e/main_test/cabinet/orders.cy.js` — тест сверяет сумму на
 карточке заказа с `payment_info.to_pay` для заказа с пустым `basket.items`
 и падает, пока баг не исправлен.

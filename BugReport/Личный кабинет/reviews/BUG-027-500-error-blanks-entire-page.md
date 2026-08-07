@@ -62,6 +62,6 @@ route-компонента страницы целиком — необрабо�
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/reviews.cy.js` — тест мокает `500` для
+`cypress/e2e/main_test/cabinet/reviews.cy.js` — тест мокает `500` для
 `GET /v2/reviews/waiting-products` и проверяет, что `<nav>` и `<h1>`
 остаются видимыми; падает, пока баг не исправлен.

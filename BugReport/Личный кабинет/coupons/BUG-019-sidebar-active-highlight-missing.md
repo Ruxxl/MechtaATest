@@ -51,5 +51,5 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/coupons.cy.js` — тест проверяет
+`cypress/e2e/main_test/cabinet/coupons.cy.js` — тест проверяет
 непрозрачный фон у пункта «Купоны» и падает, пока баг не исправлен.

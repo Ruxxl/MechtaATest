@@ -73,6 +73,6 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/orders.cy.js` — тест сверяет отображение
+`cypress/e2e/main_test/cabinet/orders.cy.js` — тест сверяет отображение
 баннера «Оплата не прошла» для ВСЕХ заказов с
 `order_status_banner.type: payment_failed` и падает, пока баг не исправлен.

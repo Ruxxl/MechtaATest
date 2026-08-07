@@ -57,5 +57,5 @@ lg:text-mi-header-2! ...">Купоны</h2>` — на один уровень н
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/coupons.cy.js` — тест ожидает `<h1>` с
+`cypress/e2e/main_test/cabinet/coupons.cy.js` — тест ожидает `<h1>` с
 текстом «Купоны» и падает, пока баг не исправлен.

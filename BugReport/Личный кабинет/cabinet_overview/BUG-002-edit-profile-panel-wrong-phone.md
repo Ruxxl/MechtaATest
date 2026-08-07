@@ -68,7 +68,7 @@ value="+7 700 000-00-00">`) не привязано к реальному зна
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/cabinet_overview.cy.js` — тест
+`cypress/e2e/main_test/cabinet/cabinet_overview.cy.js` — тест
 «Данные в панели редактирования профиля предзаполнены корректно» сверяет
 значение поля «Телефон» в панели с `data.profile_info.phone` из
 `GET /v2/personal` и падает, пока баг не исправлен.

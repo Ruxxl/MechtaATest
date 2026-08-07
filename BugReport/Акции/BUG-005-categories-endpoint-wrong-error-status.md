@@ -55,4 +55,4 @@ curl -s -o /dev/null -w "%{http_code}\n" \
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/actions/api_categories.cy.js` → `API-CT-008`, `API-CT-010`, `API-CT-011` — все три целенаправленно ожидают код `4xx` и падают на фактическом `500`, документируя баг на уровне API-контракта.
+`cypress/e2e/main_test/actions/api_categories.cy.js` → `API-CT-008`, `API-CT-010`, `API-CT-011` — все три целенаправленно ожидают код `4xx` и падают на фактическом `500`, документируя баг на уровне API-контракта.

@@ -59,7 +59,7 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/bonuses.cy.js` — тест разворачивает
+`cypress/e2e/main_test/cabinet/bonuses.cy.js` — тест разворачивает
 заказ с несколькими товарами и разными earned_chips/earned_bonuses, сверяет
 каждую строку с её собственным значением из API и падает, пока баг не
 исправлен.

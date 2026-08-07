@@ -87,7 +87,7 @@ XSS-пейлоад `<script>alert(1)</script>`).
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/edit_profile.cy.js`, describe-блок
+`cypress/e2e/main_test/cabinet/edit_profile.cy.js`, describe-блок
 «БАГ-020: тихий silent-drop при PUT /v3/profile для цифр/HTML в имени» —
 3 теста (прямой API-вызов для firstname, для lastname, и полный UI-сценарий
 с проверкой ложного тоста «Успешно»). Тесты ожидают корректное поведение

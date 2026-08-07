@@ -85,7 +85,7 @@ data-slot="linkLabel">cabinet</span>` (нужный "текущая страни
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/cabinet_overview.cy.js` — тест
+`cypress/e2e/main_test/cabinet/cabinet_overview.cy.js` — тест
 «Крошка «Личный кабинет» неактивна (текущая страница)» целенаправленно ожидает
 правильное поведение (крошка — не `<a>`, есть `aria-current` или отличный от
 ссылки цвет) и падает, пока баг не исправлен.

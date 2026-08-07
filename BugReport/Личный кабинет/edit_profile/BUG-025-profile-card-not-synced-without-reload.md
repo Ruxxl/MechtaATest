@@ -51,7 +51,7 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/edit_profile.cy.js`, describe-блок
+`cypress/e2e/main_test/cabinet/edit_profile.cy.js`, describe-блок
 «Редактирование профиля — синхронизация после сохранения (TC-080..083)» —
 тесты ожидают немедленное обновление `h2` карточки без reload и падают,
 пока баг не исправлен. Отдельно подтверждено, что часть после `cy.reload()`

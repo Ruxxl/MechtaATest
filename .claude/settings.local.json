@@ -191,7 +191,16 @@
       "Bash(node scripts/jira-create-bugs.mjs --parent AS-4502 --dir \"BugReport/Личный кабинет\")",
       "Bash(node scripts/jira-create-bugs.mjs --parent AS-4502 --only BUG-001)",
       "Bash(node scripts/jira-create-bugs.mjs --parent AS-4502 --only BUG-001 --dir \"BugReport/Личный кабинет\")",
-      "Bash(node --input-type=module -e ' *)"
+      "Bash(node --input-type=module -e ' *)",
+      "Bash(node scripts/jira-list-bug-issues.mjs --search \"Акции\")",
+      "Bash(node scripts/jira-list-bug-issues.mjs --all)",
+      "Bash(top -l 1 -n 0)",
+      "Bash(kill -9 36144)",
+      "Bash(pkill -9 -f \"Cypress.app\")",
+      "Bash(top -l 1 -n 5 -o mem)",
+      "Bash(disown)",
+      "Bash(node --check cypress/e2e/regress_test/promotions_regress.cy.js)",
+      "Bash(awk '{print $1}')"
     ]
   }
 }

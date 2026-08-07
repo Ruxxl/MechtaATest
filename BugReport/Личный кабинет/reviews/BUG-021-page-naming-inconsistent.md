@@ -47,5 +47,5 @@
 
 ## Автотест, фиксирующий баг
 
-`cypress/e2e/Regress_Test/cabinet/reviews.cy.js` — тест сверяет текст
+`cypress/e2e/main_test/cabinet/reviews.cy.js` — тест сверяет текст
 последней крошки с текстом `<h1>` и падает, пока расхождение не устранено.
