@@ -175,7 +175,14 @@
       "Bash(awk '{print $2, $3\"%\", $11, $12, $13, $14, $15}')",
       "Bash(vm_stat)",
       "Bash(awk '{print $2, $3\"%\", $10}')",
-      "Bash(top -l 1 -n 5 -o cpu)"
+      "Bash(top -l 1 -n 5 -o cpu)",
+      "Bash(top -l 1 -s 0)",
+      "Read(//private/tmp/**)",
+      "Bash(sips -c 400 400 --cropOffset 780 210 \"/Users/ruslanisin/Documents/MechtaATest/cypress/screenshots/calendar_only.cy.js/SCRATCH календарь disabled-check -- Дни позже data.max задизейблены в календаре и не реагируют на клик \\(failed\\).png\" --out calendar_crop.png)",
+      "Bash(sips *)",
+      "Bash(node -e \"console.log\\(new Date\\('2026-08-08T00:00:00'\\).toISOString\\(\\)\\)\")",
+      "Bash(pkill -9 -f \"cypress run\")",
+      "Bash(pkill -9 -f \"Cypress\")"
     ]
   }
 }

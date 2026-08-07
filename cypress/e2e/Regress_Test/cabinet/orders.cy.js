@@ -293,18 +293,9 @@ describe('Мои заказы — сверка полей с реальным AP
         });
     });
 
-    // TC-МО-59 — БАГ BUG-006: personal_info.full_name заказа не совпадает
-    // по формату с profile_info.full_name
-    it('personal_info.full_name заказа соответствует profile_info.full_name — BUG-006', () => {
-        cy.loginD2();
-        cabinetApi.getPersonal().then(({ body: personalBody }) => {
-            const profileName = personalBody.data.profile_info.full_name;
-            cabinetApi.getOrdersList({ status: 'active' }).then(({ body }) => {
-                const orderName = body.data.orders[0].order.personal_info.full_name;
-                expect(orderName).to.eq(profileName);
-            });
-        });
-    });
+    // TC-МО-59 — BUG-006 отклонён (2026-08-07): формат " Фамилия Имя" в
+    // personal_info.full_name заказа — подтверждённое ожидаемое поведение,
+    // расхождение с profile_info.full_name не баг. Ассерт снят.
 
     // TC-МО-67 — БАГ BUG-007: created_at на 5 часов отстаёт от statuses[].date
     it('created_at заказа совпадает со statuses[].date (не отличается на часовой пояс) — BUG-007', () => {

@@ -107,21 +107,31 @@ class EditProfilePage {
         return cy.get('button[aria-label="Next year"]');
     }
 
+    // Сетка календаря рендерит ~41 ячейку сразу — хвостовые/ведущие дни
+    // СОСЕДНИХ месяцев тоже присутствуют в DOM (для выравнивания недель) и
+    // несут те же data-value, что и настоящие дни этой даты в её "родном"
+    // месяце. Reka UI помечает такие ячейки атрибутом `data-outside-view`
+    // (пустая строка = присутствует = чужой месяц; атрибут отсутствует =
+    // свой месяц) — исключаем их через :not(), иначе можно попасть на
+    // дату-заглушку до того, как календарь реально долистал до нужного
+    // месяца (см. BUG-исследование scrollCalendarToDate ниже).
     getCalendarDayCell(isoDate) {
-        return cy.get(`[data-value="${isoDate}"]`);
+        return cy.get(`[data-value="${isoDate}"]:not([data-outside-view])`);
     }
 
     // Календарь при открытии показывает месяц ТЕКУЩЕГО значения поля, не
     // обязательно месяц искомой даты — домётываем вперёд по одному месяцу,
-    // пока искомый день не появится в сетке. maxSteps — защита от бесконечного
-    // цикла, если дата в принципе недостижима (например, опечатка в isoDate).
+    // пока искомый день не появится в сетке КАК ДЕНЬ СВОЕГО МЕСЯЦА (не как
+    // чужая хвостовая ячейка соседнего месяца — см. комментарий у
+    // getCalendarDayCell). maxSteps — защита от бесконечного цикла, если
+    // дата в принципе недостижима (например, опечатка в isoDate).
     scrollCalendarToDate(isoDate, maxSteps = 36) {
         const step = (n) => {
             if (n > maxSteps) {
                 throw new Error(`scrollCalendarToDate: не нашли ${isoDate} за ${maxSteps} шагов`);
             }
             cy.get('body').then(($body) => {
-                if ($body.find(`[data-value="${isoDate}"]`).length > 0) return;
+                if ($body.find(`[data-value="${isoDate}"]:not([data-outside-view])`).length > 0) return;
                 this.getCalendarNextMonthButton().click();
                 step(n + 1);
             });

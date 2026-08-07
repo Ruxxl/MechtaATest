@@ -452,9 +452,16 @@ describe('Редактирование профиля — календарь «�
             EditProfile.getCalendarNextYearButton().should('be.disabled');
 
             // Если максимальная дата — не последний день месяца, день сразу
-            // после неё должен быть в сетке и быть задизейбленным
+            // после неё должен быть в сетке и быть задизейбленным.
+            // ВАЖНО: .toISOString() тут нельзя — она конвертирует в UTC, а
+            // машина, где гоняются тесты, в зоне +05 (Алматы), из-за чего
+            // локальная полночь nextDay съезжает на предыдущий UTC-день и
+            // nextIso совпадает с самой maxIso (разрешённой) датой вместо
+            // следующей за ней — собираем ISO-строку из локальных
+            // компонентов даты вручную.
             if (nextDay.getMonth() === maxDate.getMonth()) {
-                const nextIso = nextDay.toISOString().slice(0, 10);
+                const pad = (n) => String(n).padStart(2, '0');
+                const nextIso = `${nextDay.getFullYear()}-${pad(nextDay.getMonth() + 1)}-${pad(nextDay.getDate())}`;
                 EditProfile.getCalendarDayCell(nextIso).should('have.attr', 'aria-disabled', 'true');
             }
         });
