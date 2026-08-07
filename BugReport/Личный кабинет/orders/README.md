@@ -7,7 +7,6 @@
 |---|---|---|---|
 | [BUG-004](./BUG-004-zero-price-orders-with-real-payment.md) | Заказы с непустым `payment_info.to_pay` показывают «0 ₸» в списке (фронт берёт `basket.total_prices` вместо `payment_info`) | High | Подтверждён |
 | [BUG-005](./BUG-005-orders-count-arithmetic-mismatch.md) | `orders_count.active + cancelled + finished` ≠ `orders_count.all` (расхождение стабильно ≈ значению `cancelled`) | Medium | Подтверждён |
-| [BUG-007](./BUG-007-created-at-timezone-offset.md) | `created_at` заказа систематически на 5 часов отстаёт от `statuses[].date` того же события (UTC vs UTC+5) | Medium | Подтверждён |
 | [BUG-008](./BUG-008-missing-page-title.md) | На странице «Мои заказы» нет `<h1>`/заголовка страницы вообще | Low | Подтверждён |
 | [BUG-009](./BUG-009-payment-failed-banner-not-shown-for-some-orders.md) | Карточка рендерит `summary.title.text`, а не `order_status_banner.title` — у 3 из 4 заказов с ошибкой оплаты предупреждение вообще не показывается | High | Подтверждён |
 
@@ -16,6 +15,10 @@
 
 ## Что НЕ было оформлено как баг (и почему)
 
+- **`created_at` заказа систематически на 5 часов отстаёт от
+  `statuses[].date` того же события** (UTC vs UTC+5). Изначально заведён
+  как BUG-007, отклонён заказчиком 2026-08-07 как не актуально — файл и
+  тест удалены.
 - **`personal_info.full_name` заказа = `" Фамилия Имя"`** (ведущий пробел,
   обратный порядок слов), расходится с `profile_info.full_name` из
   `/v2/personal`. Изначально заведён как BUG-006, отклонён заказчиком

@@ -182,7 +182,16 @@
       "Bash(sips *)",
       "Bash(node -e \"console.log\\(new Date\\('2026-08-08T00:00:00'\\).toISOString\\(\\)\\)\")",
       "Bash(pkill -9 -f \"cypress run\")",
-      "Bash(pkill -9 -f \"Cypress\")"
+      "Bash(pkill -9 -f \"Cypress\")",
+      "Bash(node --check \"/Users/ruslanisin/Documents/MechtaATest/cypress/e2e/Regress_Test/cabinet/orders.cy.js\")",
+      "Bash(sed -i '' 's/JIRA_API_TOKEN=/JIRA_API_TOKEN=dummy/' .env.local)",
+      "Bash(node scripts/jira-create-bugs.mjs --dir \"BugReport/Личный кабинет\")",
+      "Bash(cd *)",
+      "WebFetch(domain:developer.atlassian.com)",
+      "Bash(node scripts/jira-create-bugs.mjs --parent AS-4502 --dir \"BugReport/Личный кабинет\")",
+      "Bash(node scripts/jira-create-bugs.mjs --parent AS-4502 --only BUG-001)",
+      "Bash(node scripts/jira-create-bugs.mjs --parent AS-4502 --only BUG-001 --dir \"BugReport/Личный кабинет\")",
+      "Bash(node --input-type=module -e ' *)"
     ]
   }
 }

@@ -297,16 +297,6 @@ describe('Мои заказы — сверка полей с реальным AP
     // personal_info.full_name заказа — подтверждённое ожидаемое поведение,
     // расхождение с profile_info.full_name не баг. Ассерт снят.
 
-    // TC-МО-67 — БАГ BUG-007: created_at на 5 часов отстаёт от statuses[].date
-    it('created_at заказа совпадает со statuses[].date (не отличается на часовой пояс) — BUG-007', () => {
-        cy.loginD2();
-        cabinetApi.getOrdersList({ status: 'active' }).then(({ body }) => {
-            const order = body.data.orders[0];
-            const statusKey = Object.keys(order.statuses)[0];
-            const createdAt = new Date(order.created_at.replace(' ', 'T'));
-            const statusDate = new Date(order.statuses[statusKey].date.replace(' ', 'T'));
-            const diffHours = (statusDate - createdAt) / (1000 * 60 * 60);
-            expect(diffHours, 'разница между created_at и statuses[].date в часах').to.eq(0);
-        });
-    });
+    // TC-МО-67 — BUG-007 отклонён (2026-08-07): расхождение created_at
+    // и statuses[].date на 5 часов (UTC vs UTC+5) не актуально. Ассерт снят.
 });
