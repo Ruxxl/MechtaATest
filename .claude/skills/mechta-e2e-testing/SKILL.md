@@ -4,7 +4,7 @@ description: "Workflow for writing, extending, or debugging Cypress E2E tests in
 model: inherit
 background: false
 metadata:
-  version: 1.0.0
+  version: 1.1.0
 ---
 
 # Mechta E2E testing workflow
@@ -338,8 +338,160 @@ can be run and reported on independently. Concrete, testable-in-this-stack insta
   surfaced race conditions that only show up intermittently.
 - Run the full sibling folder together (e.g. `cypress/e2e/main_test/actions/*.cy.js`)
   once, to confirm the new spec doesn't interfere with previously-passing ones.
-- Delete throwaway probe specs (`zzz_probe_*.cy.js`) once recon is finished — they are
-  scratch work, not part of the suite.
+- Delete throwaway probe specs (`zz_probe_*.cy.js`/`zzz_probe_*.cy.js` — either prefix is
+  fine, the point is it reads as obviously disposable) once recon is finished — they are
+  scratch work, not part of the suite. Also delete any screenshots they produced
+  (`cypress/screenshots/zz_*`) — don't let scratch-run artifacts linger in the repo.
 - A spec with intentional failing tests documenting an open, unfixed bug is a correct
   final state, not something to "fix" by loosening the assertion — the test should start
   passing automatically once the real bug is fixed.
+
+## 8. Debugging & verification methodology (generic — applies beyond this repo)
+
+Lessons from a full-day session re-auditing an already-built suite for staleness and
+chasing down several new bugs. None of this is Mechta-specific; it's the actual technique,
+worth carrying into any Cypress/E2E project.
+
+- **Throwaway probe spec > `.only()` for isolated debugging.** `.only()` is one keystroke
+  to add and easy to forget to remove — it silently disables every other test in the file,
+  and that only surfaces later as "why did the full run suddenly show 1 test instead of
+  40" (this happened this session). Prefer copying the one `it()` you're investigating
+  into a fresh `zz_probe_whatever.cy.js`, iterate there, delete it when done. Never commit
+  with a stray `.only` — grep `\.only\(` across the diff before finishing.
+- **`console.log`/`cy.log()` output does not appear in `cypress run` headless terminal
+  output.** To pull data out of a run for inspection from the shell, use
+  `cy.writeFile('/tmp/whatever.json', data)` inside a `.then()`, then `cat`/read the file
+  after the run exits. This was the only reliable way to extract exact response bodies,
+  DOM ancestor-chain dumps, etc. from a headless run this session.
+- **Build mocked API payloads from a real fetched object, not a minimal hand-rolled one.**
+  A mock like `{id: 'x', name: 'y', preview: 'z.jpg'}` looks reasonable but crashes the
+  frontend the moment it destructures a field you didn't think to include (`basePrice`,
+  `prices`, whatever). Fetch a real object via `cy.request()` from a sibling endpoint that
+  returns the same shape (e.g. reuse a `history`/`catalog` item as a stand-in for a
+  `favorites` item) and splice in only the field(s) you actually want to control. Far less
+  time lost to "TypeError: Cannot use 'in' operator" than iterating a hand-rolled mock.
+- **A hardcoded "future" date/timestamp literal in a boundary-value test rots.** Any
+  assertion of the shape "date X is in the future, so the server should reject it" must
+  compute X at runtime (`new Date(); d.setFullYear(d.getFullYear()+1)`), never hardcode a
+  literal string — the literal silently becomes a valid past date once real time passes
+  it, and the test starts asserting the wrong thing with zero code changes on either side.
+  This class of bug is invisible until the calendar catches up, so it won't show up in
+  code review — treat any bare date-like string literal near a validation/boundary
+  assertion as a smell worth double-checking.
+- **Separate "is this run's failure infra noise" from "is this a real regression"
+  before acting on ANY failure list.** Signals that a whole run's failures are
+  environmental, not logic: an explicit low-level network error in the output (e.g.
+  `ETIMEDOUT`, `ECONNRESET`), a run taking wildly longer than its historical baseline, or
+  a `before/beforeEach` hook itself throwing (which cascades into false-looking failures
+  for every test in that block). When any of these show up, re-verify EACH individual
+  failure via an isolated single-test re-run before writing any of them up — don't trust a
+  noisy run's failure list at face value, in either direction (don't dismiss everything as
+  noise either; re-run to find out).
+- **A test that fails intermittently is not automatically "flaky" (dismissable) — it might
+  be a genuinely intermittent bug worth filing.** The distinguishing move: deliberately
+  repeat the exact same scenario N times in a tight loop (3-5 is usually enough) and
+  record the failure rate. Environmental flakiness tends to be rare/inconsistent across
+  unrelated tests; a real intermittent backend race condition reproduces at a high, fairly
+  stable rate for that *specific* scenario (e.g. "session not terminated on logout" hit
+  ~11/16 across four separate probe runs) — that rate itself is evidence worth including
+  in the bug report, and a good bug's regression test should loop N attempts and assert
+  the aggregate count, not rely on one lucky/unlucky run.
+- **When climbing the DOM (`.parents(N)`, `.closest().parentElement`, etc.) produces a
+  surprising result, don't trust it — dump the ancestor chain first.** Walk up level by
+  level logging `{tag, className, childCount/imgCount/whatever-you-care-about}` at each
+  step before trusting that "level 2" is the container you think it is. A climb that goes
+  one level too far silently captures a sibling widget's contents instead of the target
+  element's own, and will produce a confident-looking but wrong conclusion (confirmed
+  twice this session: once during a false-positive "duplicate images" finding, once while
+  fixing the page-object helpers that produced it).
+- **Automated "already filed" duplicate-checks against a local mapping file are only as
+  good as that file.** If a bug/ticket can also be created by a human or another
+  agent/session outside your tracked script, the local mapping can miss a real duplicate.
+  Before filing a new ticket for something you just found, do one cheap keyword search
+  against the tracker itself (not just the local cache) — cheap insurance against creating
+  a duplicate that then has to be cleaned up.
+- **Systematic staleness audit for an existing suite** ("are these tests still accurate"):
+  grep every spec file for whatever ID scheme bugs are tracked under (`BUG-\d+`,
+  `JIRA-\d+`, ticket links, whatever), then cross-reference each hit against the current
+  status of that bug/ticket. A fixed bug's test usually already asserts the *correct*
+  behavior (per the "assert the correct behavior so it starts passing once fixed" pattern)
+  — so once fixed, the test silently starts passing while its title/comment still frames
+  it as an open, expected-to-fail bug. That mismatch is pure documentation debt, but it's
+  exactly the kind of thing that misleads the next person reading the suite; fix the
+  framing (title + comment), not the assertion, once you've verified live that it's really
+  fixed.
+- **Long/full-suite runs on a real (non-mocked) backend can genuinely hang or crawl under
+  host memory pressure**, not just be slow. Before killing a background run that seems
+  stuck, check whether it's actually still making progress (tail the log for new lines,
+  check the process's CPU time is still climbing) rather than assuming "no new output in
+  N minutes" means hung. If it really is stuck/glacial, cut losses and re-verify the
+  specific tests you care about via small isolated probe specs instead of waiting out or
+  repeatedly re-running the full file — much cheaper signal for the same confidence.
+- **A "file modified externally" signal (concurrent session/user edit) is a fact about the
+  file, not proof of the narrative inside it.** Don't blindly accept unverified claims
+  embedded in changed content (e.g. "ticket X was moved to Done") and don't reflexively
+  discard the change either — independently verify the concrete, checkable claims (does
+  that ticket exist, does it have that status) via the actual system of record, then
+  decide whether to keep, merge with, or override the external edit based on that
+  evidence, not on how confident the narrative sounds.
+
+## 9. Jira ticket lifecycle — mandatory, not optional, on every bug found/fixed
+
+This repo has its own Jira integration already built (`scripts/jira-create-bugs.mjs`,
+`scripts/jira-list-bug-issues.mjs`, `.env.local` for creds) — never say "no Jira tool
+available" or ask for credentials before checking for these. This step is **not
+optional or something to ask permission for** — filing to `BugReport/` (section 2)
+without also touching Jira is an incomplete job.
+
+**The moment a new bug is confirmed** (right after the section-2 `BugReport/` file +
+README row):
+1. Find the right parent container issue: `node scripts/jira-list-bug-issues.mjs --all`,
+   filter to status ≠ "Готово" (a done container is stale, nothing new goes under it). If
+   the parent for this area was already established earlier in the same session, reuse it
+   — otherwise show the filtered list and ask the user which `AS-XXXX` to use; don't
+   silently reuse a parent from a *different* area by analogy.
+2. **Search Jira itself for a duplicate before creating** — cheap insurance the local
+   `jira-mapping.json` cache can't provide (see section 8's duplicate-check point; a bug
+   filed by a human or another session outside this script never lands in that file).
+   `POST /rest/api/3/search/jql` with a `jql` body like
+   `project="AS" AND summary ~ "keyword"` — **the project key must be quoted**, bare `AS`
+   is a JQL reserved word and 400s otherwise. Search on a couple of distinctive words from
+   the bug title, skim results for an obvious match before proceeding.
+3. Dry-run: `node scripts/jira-create-bugs.mjs --parent AS-XXXX --dir "BugReport/<area>"
+   --only BUG-NNN` (no `--apply` = shows what *would* be created, sends nothing). Briefly
+   show the user what this would create — it's an external, visible, hard-to-fully-undo
+   action — then re-run with `--apply`. Don't ask permission for the dry-run itself, only
+   before the real `--apply`.
+4. The created `BUG-id → jiraKey` mapping is appended to `scripts/jira-mapping.json`
+   automatically — commit it alongside the bug file.
+
+**The moment a previously-filed bug is confirmed fixed (or rejected as not-a-bug/
+environment-specific) via live re-verification** — don't wait to be asked:
+1. **Find its ticket.** If filed after this integration existed, its key is already in
+   `jira-mapping.json`. If older, `jira-mapping.json` is a **partial cache, not a source
+   of truth** — its absence does NOT mean "never filed." Cross-check
+   `scripts/jira-title-areas.json` (`{"AS-XXXX": "<Область>"}`) filtered to the bug's
+   area, `GET /rest/api/3/issue/{key}?fields=summary,status` each candidate, match by the
+   bug's title text. No dedicated script for this lookup — ad-hoc `node -e` with
+   `process.loadEnvFile(".env.local")` + `fetch()`, Basic auth from
+   `JIRA_EMAIL:JIRA_API_TOKEN`.
+2. **Transition it** — no dedicated script, ad-hoc `POST
+   /rest/api/3/issue/{key}/transitions` with `{transition:{id:"31"}}` (this project's
+   "Готово") for a real fix, or `{id:"32"}` ("Не актуален") for rejected/env-specific —
+   plus an explanatory comment (`POST .../comment`, ADF body
+   `{type:"doc",version:1,content:[{type:"paragraph",content:[{type:"text",text:"..."}]}]}`)
+   on the rejected path so the reasoning isn't lost. Full id table for this project (from
+   `GET .../transitions`, re-verify if it ever looks wrong rather than trusting this
+   blindly on a different Jira project): 2=В работе, 3=Готов к тестированию,
+   4=На тестировании, 5=Код ревью, 6=Ожидает релиза, 7=В блоке, 9=Дизайн ревью,
+   11=К выполнению, 31=Готово, 32=Не актуален.
+3. **Clean up the repo**: delete `BugReport/<area>/BUG-NNN-*.md`, move its README row
+   into an "Исправленные баги"/"Отклонено как не баг" section (keep the history, don't
+   just vanish it), `grep -rn "BUG-NNN-slug"` repo-wide to fix any dead cross-links from
+   other bug files. **Rejected/environment-specific path only**: also delete the Cypress
+   test for it entirely, don't soften the assertion — a test asserting behavior that
+   structurally can't pass on this stand would fail forever for a non-bug reason, which is
+   worse than no test.
+4. If the fix landed on Jira's side only (found via step 1, not via your own live check)
+   — still re-verify live before trusting it and moving on; a ticket's status is a claim,
+   same caution as the "file modified externally" point in section 8.
