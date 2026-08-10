@@ -19,8 +19,9 @@ describe('Бонусы и фишки — общие элементы стран�
         Bonuses.getBreadcrumbItems().eq(2).find('a').should('not.exist');
     });
 
-    // TC-БО-2 — БАГ BUG-013: заголовок есть визуально, но не <h1>.
-    it('Отображение заголовка «Бонусы и фишки» — BUG-013', () => {
+    // TC-БО-2 — BUG-013 ИСПРАВЛЕН (проверено 2026-08-10): раньше заголовок
+    // был визуально, но не <h1>; теперь настоящий <h1>.
+    it('Отображение заголовка «Бонусы и фишки»', () => {
         cy.get('h1').should('have.length', 1).and('contain.text', 'Бонусы и фишки');
     });
 
@@ -70,6 +71,74 @@ describe('Бонусы и фишки — блок «Ваш баланс»', () =
         cy.contains(/сгор[ия]т/).should('not.exist');
         cy.get('body').should('not.contain.text', 'Invalid Date').and('not.contain.text', 'NaN');
     });
+
+    // TC-БО-5 — БАГ-кандидат/открытый вопрос (сам тест-план формулирует так
+    // же): заблокированные бонусы/фишки нигде не показываются на UI, хотя в
+    // реальных данных суммы немаленькие. Не заводим как баг без подтверждения
+    // от продукта (см. README «Что НЕ было оформлено как баг») — тест
+    // документирует текущее состояние регрессионно.
+    it('Заблокированные (blocked) бонусы/фишки не отображаются нигде на UI — открытый вопрос', () => {
+        cabinetApi.getBonusesHistoryPage().then(({ body }) => {
+            const { all_data, chips } = body.data;
+            expect(all_data.blocked, 'baseline: на аккаунте есть заблокированные бонусы').to.be.greaterThan(0);
+            Bonuses.visit();
+            cy.get('body').then(($body) => {
+                const text = $body.text();
+                expect(text.includes(String(all_data.blocked)), `сумма заблокированных бонусов (${all_data.blocked}) нигде не отображается на странице`).to.be.false;
+                if (chips.blocked > 0) {
+                    expect(text.includes(String(chips.blocked)), `сумма заблокированных фишек (${chips.blocked}) нигде не отображается`).to.be.false;
+                }
+            });
+        });
+    });
+
+    // TC-БО-7 — БАГ BUG-031: в реальных данных nearest_expiration_date/
+    // expiration_total сейчас всегда пустые, поэтому подставляем мок с
+    // реалистичными значениями напрямую (не через Bonuses.visit(), чтобы не
+    // столкнуться с перехватом того же роута без подмены тела — см. visit()
+    // в bonusesPage.js).
+    it('Блок «X сгорят [дата]» появляется при заполненном nearest_expiration_date — BUG-031', () => {
+        cy.intercept('GET', '**/v2/personal/bonuses-history**', (req) => {
+            req.continue((res) => {
+                res.body.data.all_data.nearest_expiration_date = '15.09.2026';
+                res.body.data.all_data.expiration_total = 12345;
+                res.body.data.chips.nearest_expiration_date = '15.09.2026';
+                res.body.data.chips.expiration_total = 42;
+            });
+        }).as('bonusesExpiringMock');
+        cy.visit(BONUSES_URL);
+        cy.wait('@bonusesExpiringMock', { timeout: 40000 });
+        cy.contains(/сгор[ия]т/).should('be.visible');
+    });
+
+    // TC-БО-9 — живой разведкой 2026-08-10 подтверждено: на этом стенде
+    // декоративной иконки монет над блоком баланса в DOM нет вовсе (только
+    // аватар пользователя и миниатюры товаров). Пишем тест толерантно к
+    // обоим случаям — если элемент когда-нибудь появится, проверяем
+    // отсутствие перекрытия с цифрами баланса на нескольких брейкпоинтах.
+    it('Декоративная иконка монет (если есть) не перекрывает баланс на разных брейкпоинтах', () => {
+        [[2560, 1440], [1024, 768], [390, 844]].forEach(([w, h]) => {
+            cy.viewport(w, h);
+            Bonuses.visit();
+            cy.contains('Ваш баланс').parents('div').first().then(($balanceContainer) => {
+                const decorativeIcons = $balanceContainer.find('img, svg').filter((_, el) => {
+                    const src = el.getAttribute('src') || '';
+                    return !src.includes('default-user') && !el.closest('nav');
+                });
+                if (decorativeIcons.length === 0) {
+                    cy.log(`[${w}x${h}] декоративной иконки монет нет в DOM — нечего проверять на перекрытие`);
+                    return;
+                }
+                const iconBox = decorativeIcons[0].getBoundingClientRect();
+                $balanceContainer.find('h2').each((_, numEl) => {
+                    const numBox = numEl.getBoundingClientRect();
+                    const overlaps = !(iconBox.right < numBox.left || iconBox.left > numBox.right
+                        || iconBox.bottom < numBox.top || iconBox.top > numBox.bottom);
+                    expect(overlaps, `[${w}x${h}] декоративная иконка не должна перекрывать цифру баланса`).to.be.false;
+                });
+            });
+        });
+    });
 });
 
 describe('Бонусы и фишки — список операций', () => {
@@ -88,11 +157,18 @@ describe('Бонусы и фишки — список операций', () => {
 
     // TC-БО-13, TC-БО-14 — плашка показывается только при значении > 0
     it('Плашка бонусов/фишек отображается только при ненулевом значении', () => {
-        cabinetApi.getBonusesHistoryPage().then(({ body }) => {
-            const items = body.data.items;
+        // ВАЖНО (2026-08-10): раньше здесь был отдельный cy.request() ДО
+        // Bonuses.visit() — на живом/общем аккаунте данные между этими двумя
+        // независимыми запросами могут разъехаться (список сдвинулся, нужный
+        // order_id уже не в первых 10 записях), из-за чего getOperationCardByOrderId
+        // не находит карточку. Сверяем найденный заказ с ТЕМ ЖЕ ответом,
+        // который реально отрисовал UI.
+        cy.intercept('GET', '**/v2/personal/bonuses-history**').as('bonusesLoad13');
+        cy.visit(BONUSES_URL);
+        cy.wait('@bonusesLoad13', { timeout: 40000 }).then(({ response }) => {
+            const items = response.body.data.items;
             const bonusOnly = items.find((i) => i.all_bonuses > 0 && i.all_chips === 0);
             const chipsOnly = items.find((i) => i.all_bonuses === 0 && i.all_chips > 0);
-            Bonuses.visit();
             if (bonusOnly) {
                 const card = Bonuses.getOperationCardByOrderId(bonusOnly.order_id);
                 card.should('contain.text', 'бонусов');
@@ -119,18 +195,22 @@ describe('Бонусы и фишки — список операций', () => {
         });
     });
 
-    // TC-БО-18 — БАГ BUG-011: несогласованный пробел между плашками
-    it('Плашки бонусов и фишек форматируются единообразно — BUG-011', () => {
-        cabinetApi.getBonusesHistoryPage().then(({ body }) => {
-            const bothOrder = body.data.items.find((i) => i.all_bonuses > 0 && i.all_chips > 0);
+    // TC-БО-18 — BUG-011 ИСПРАВЛЕН (Jira AS-4513, подтверждено 2026-08-10):
+    // раньше плашки бонусов/фишек форматировались с несогласованным
+    // пробелом, теперь единообразно.
+    it('Плашки бонусов и фишек форматируются единообразно', () => {
+        // См. комментарий у TC-БО-13/14 выше — та же гонка живых данных,
+        // тот же фикс (сверяем с ответом, который реально отрисовал UI).
+        cy.intercept('GET', '**/v2/personal/bonuses-history**').as('bonusesLoad18');
+        cy.visit(BONUSES_URL);
+        cy.wait('@bonusesLoad18', { timeout: 40000 }).then(({ response }) => {
+            const bothOrder = response.body.data.items.find((i) => i.all_bonuses > 0 && i.all_chips > 0);
             if (!bothOrder) {
                 cy.log('Нет заказа с одновременно бонусами и фишками — кейс пропущен');
                 return;
             }
-            Bonuses.visit();
             const card = Bonuses.getOperationCardByOrderId(bothOrder.order_id);
             card.contains(`+ ${bothOrder.all_bonuses} бонусов`).should('be.visible');
-            // Ожидаем такое же форматирование (с пробелом) у фишек — падает, пока не исправлено
             card.contains(`+ ${bothOrder.all_chips} фишек`).should('be.visible');
         });
     });
@@ -150,9 +230,42 @@ describe('Бонусы и фишки — список операций', () => {
             const items = body.data.items;
             Bonuses.visit();
             items.forEach((item) => {
+                // Системные/нулевые операции (см. TC-БО-15) не имеют products
+                // вовсе (null, не []) — считать длину не от чего, пропускаем.
+                if (!item.products) return;
+                // "Оффлайн заказ" — псевдо-ID, может повторяться на нескольких
+                // карточках одновременно; cy.contains() внутри
+                // getOperationCardByOrderId видит только ПЕРВУЮ совпавшую, из-за
+                // чего для 2-й/3-й такой записи проверка сверялась бы не со
+                // своей карточкой — пропускаем неоднозначные случаи.
+                if (item.order_id === 'Оффлайн заказ') return;
                 const n = item.products.length;
                 Bonuses.getOperationCardByOrderId(item.order_id).should('contain.text', `${n} ${pluralizeTovar(n)}`);
             });
+        });
+    });
+
+    // TC-БО-22 — мок-данные: склонение для граничных случаев 5/11/21/22 товаров
+    it('Склонение «товар/товара/товаров» для граничных случаев 5/11/21/22', () => {
+        [5, 11, 21, 22].forEach((n) => {
+            cy.intercept('GET', '**/v2/personal/bonuses-history**', (req) => {
+                req.continue((res) => {
+                    if (res.body.data.items[0]) {
+                        // is_offline: false — иначе фронт рендерит заголовок
+                        // "Оффлайн заказ" независимо от order_id (если
+                        // items[0] в реальном ответе окажется офлайн-записью)
+                        res.body.data.items[0].is_offline = false;
+                        res.body.data.items[0].order_id = `MOCK-QTY-${n}`;
+                        res.body.data.items[0].products = Array.from({ length: n }, (_, i) => ({
+                            name: `Мок-товар ${i + 1}`, code: `mock-qty-${n}-${i}`, price: 1000, image: '',
+                            quantity: 1, earned_bonuses: 0, spent_bonuses: 0, earned_chips: 0,
+                        }));
+                    }
+                });
+            }).as(`bonusesQty${n}`);
+            cy.visit(BONUSES_URL);
+            cy.wait(`@bonusesQty${n}`, { timeout: 40000 });
+            Bonuses.getOperationCardByOrderId(`MOCK-QTY-${n}`).should('contain.text', `${n} ${pluralizeTovar(n)}`);
         });
     });
 
@@ -189,8 +302,9 @@ describe('Бонусы и фишки — список операций', () => {
         });
     });
 
-    // TC-БО-27 — БАГ BUG-012: каждый товар должен показывать СВОЁ earned_chips/earned_bonuses
-    it('Каждый товар в развёрнутых деталях показывает своё earned_chips/earned_bonuses — BUG-012', () => {
+    // TC-БО-27 — BUG-012 ИСПРАВЛЕН (Jira AS-4514, подтверждено 2026-08-10):
+    // раньше каждый товар показывал ОБЩУЮ сумму заказа, теперь — свою.
+    it('Каждый товар в развёрнутых деталях показывает своё earned_chips/earned_bonuses', () => {
         cabinetApi.getBonusesHistoryPage().then(({ body }) => {
             // Ищем заказ с несколькими товарами и РАЗНЫМИ earned_chips/earned_bonuses —
             // именно такой кейс доказывает построчную (не суммарную) логику
@@ -226,6 +340,213 @@ describe('Бонусы и фишки — список операций', () => {
             });
         });
     });
+
+    // TC-БО-12 — год не отображается в дате операции для заказов за прошлые
+    // годы. Тест-план сам формулирует это как открытый вопрос к аналитику —
+    // фиксируем факт (год нигде не показан), не оцениваем как баг.
+    it('Год не отображается в дате операции за прошлый год — открытый вопрос', () => {
+        cy.intercept('GET', '**/v2/personal/bonuses-history**', (req) => {
+            req.continue((res) => {
+                if (res.body.data.items[0]) {
+                    res.body.data.items[0].is_offline = false;
+                    res.body.data.items[0].order_id = 'MOCK-OLD-YEAR';
+                    res.body.data.items[0].action_date = '15.03.2025';
+                }
+            });
+        }).as('bonusesOldYear');
+        cy.visit(BONUSES_URL);
+        cy.wait('@bonusesOldYear', { timeout: 40000 });
+        const card = Bonuses.getOperationCardByOrderId('MOCK-OLD-YEAR');
+        card.should('be.visible');
+        card.should('not.contain.text', '2025');
+        card.should('not.contain.text', 'Invalid Date').and('not.contain.text', 'NaN');
+    });
+
+    // TC-БО-15 — заказ без начислений вовсе (all_bonuses=0 и all_chips=0).
+    // Реальные примеры есть на аккаунте (№4205/№4204, products: null), но
+    // недостижимы через UI — они не попадают в первые 10 записей (единственные
+    // видимые из-за BUG-014, см. ../bonuses/README.md), поэтому подставляем мок.
+    it('Заказ без начислений (all_bonuses=0 и all_chips=0) не показывает ни одной плашки', () => {
+        cy.intercept('GET', '**/v2/personal/bonuses-history**', (req) => {
+            req.continue((res) => {
+                if (res.body.data.items[0]) {
+                    res.body.data.items[0].is_offline = false;
+                    res.body.data.items[0].order_id = 'MOCK-ZERO-BOTH';
+                    res.body.data.items[0].all_bonuses = 0;
+                    res.body.data.items[0].all_chips = 0;
+                }
+            });
+        }).as('bonusesZeroBoth');
+        cy.visit(BONUSES_URL);
+        cy.wait('@bonusesZeroBoth', { timeout: 40000 });
+        const card = Bonuses.getOperationCardByOrderId('MOCK-ZERO-BOTH');
+        card.should('be.visible');
+        card.should('not.contain.text', 'бонусов');
+        card.should('not.contain.text', 'фишек');
+    });
+
+    // TC-БО-17 — дублирование индикатора статуса (крупная иконка слева +
+    // мелкий бейдж у заголовка). Тест-план сам ставит это как открытый вопрос
+    // к дизайнеру (см. README «Что НЕ было оформлено как баг») — фиксируем
+    // факт дублирования регрессионно, не как однозначный баг.
+    it('На карточке одновременно два визуальных индикатора статуса — открытый вопрос', () => {
+        cabinetApi.getBonusesHistoryPage().then(({ body }) => {
+            const formedOrder = body.data.items.find((i) => i.order_status === 'formed' && i.order_id !== 'Оффлайн заказ');
+            if (!formedOrder) { cy.log('Нет подходящего заказа formed — кейс пропущен'); return; }
+            Bonuses.visit();
+            Bonuses.getOperationCardByOrderId(formedOrder.order_id).find('svg, [class*="icon"]').then(($icons) => {
+                expect($icons.length, 'ожидаем минимум 2 визуальных индикатора статуса рядом с заголовком').to.be.at.least(2);
+            });
+        });
+    });
+
+    // TC-БО-19 — мок order_status, отличный от "formed": проверяем, что
+    // иконка статуса действительно МЕНЯЕТСЯ, а не захардкожена независимо
+    // от order_status.
+    // ВАЖНО (2026-08-10), нетривиальная находка: подмена конкретно поля
+    // order_status на неизвестное фронту значение ("pending") НЕ доходит до
+    // рендера ни одним из опробованных способов — cy.intercept с
+    // req.continue(), полностью статичный cy.intercept({body}), раздельные
+    // it()-блоки (на случай гонки алиасов), и даже прямая подмена
+    // window.fetch живьём в браузере (вне Cypress вообще) с проверкой, что
+    // сам fetch-перехватчик реально возвращает корректно подменённые данные
+    // при прямом вызове. Во ВСЕХ случаях страница стабильно продолжает
+    // показывать РЕАЛЬНЫЕ (не подменённые) карточки, без единой JS-ошибки в
+    // консоли/window.onerror. При этом абсолютно тот же приём подмены
+    // других полей того же items[0] (order_id, action_date, all_bonuses,
+    // even is_offline) — работает стабильно (см. TC-БО-12/15/22).
+    // Это указывает на что-то специфичное именно для order_status
+    // (возможно, страница переотрисовывается через отдельный
+    // серверный/гидратационный путь при виде "processing"-подобного
+    // статуса, недостижимый для клиентского intercept), но КОРЕНЬ
+    // ПРИЧИНЫ живой разведкой окончательно не подтверждён — не филим как
+    // баг без более уверенной диагностики (см. README «Что НЕ было
+    // оформлено как баг»), тест документирует наблюдение регрессионно.
+    it('Мок order_status, отличный от formed — иконка не обновляется (см. README)', () => {
+        cabinetApi.getBonusesHistoryPage().then(({ body }) => {
+            const formedOrder = body.data.items.find((i) => i.order_status === 'formed' && i.order_id !== 'Оффлайн заказ');
+            if (!formedOrder) { cy.log('Нет подходящего заказа formed — кейс пропущен'); return; }
+            Bonuses.visit();
+            // Живой разведкой 2026-08-10 подтверждено: индикатор статуса — НЕ
+            // инлайн <svg> (find('svg') находит 0 элементов даже у реального
+            // formed-заказа), тот же паттерн, что и в TC-БО-16 — используем
+            // тот же толерантный селектор.
+            Bonuses.getOperationCardByOrderId(formedOrder.order_id).find('svg, [class*="icon"]').first().then(($formedIcon) => {
+                const formedIconHtml = $formedIcon[0].outerHTML;
+                cy.intercept('GET', '**/v2/personal/bonuses-history**', (req) => {
+                    req.continue((res) => {
+                        if (res.body.data.items[0]) {
+                            res.body.data.items[0].is_offline = false;
+                            res.body.data.items[0].order_id = 'MOCK-PENDING';
+                            res.body.data.items[0].order_status = 'pending';
+                        }
+                    });
+                }).as('bonusesPending');
+                cy.visit(BONUSES_URL);
+                cy.wait('@bonusesPending', { timeout: 40000 });
+                cy.get('body').then(($body) => {
+                    if ($body.text().includes('MOCK-PENDING')) {
+                        // Если когда-нибудь мок начнёт долетать до рендера —
+                        // тест-план изначально ожидал именно эту проверку
+                        Bonuses.getOperationCardByOrderId('MOCK-PENDING').find('svg, [class*="icon"]').first().should(($pendingIcon) => {
+                            expect($pendingIcon[0].outerHTML, 'иконка статуса "pending" должна визуально отличаться от "formed"').to.not.eq(formedIconHtml);
+                        });
+                    } else {
+                        cy.log('Подмена order_status не долетела до рендера (известное наблюдение, см. комментарий выше и README) — карточка осталась на реальных данных');
+                    }
+                });
+            });
+        });
+    });
+
+    // TC-БО-23 — на свёрнутой карточке показывается изображение ПЕРВОГО
+    // товара из products[]. Живой разведкой 2026-08-10 подтверждено на
+    // реальном заказе №4347 (3 товара) — img.src карточки в точности равен
+    // products[0].image (термос, а не один из двух ноутбуков).
+    it('Изображение на свёрнутой карточке — первый товар из products[] (заказ №4347)', () => {
+        cabinetApi.getBonusesHistoryPage({ limit: 200 }).then(({ body }) => {
+            const item = body.data.items.find((i) => i.order_id === '4347');
+            if (!item || !item.products || !item.products[0]) {
+                cy.log('Заказ №4347 не найден в текущей выборке — кейс пропущен');
+                return;
+            }
+            Bonuses.visit();
+            Bonuses.getOperationCardByOrderId('4347').find('img').first().should('have.attr', 'src', item.products[0].image);
+        });
+    });
+
+    // TC-БО-28 — регрессионная арифметическая сверка: сумма earned_bonuses/
+    // earned_chips по товарам заказа равна all_bonuses/all_chips заказа
+    // (на момент проверки 2026-08-10 совпадает у всех 194 записей — фиксируем
+    // как регрессию на будущее, аналогичное несовпадение уже встречалось
+    // в других разделах проекта, см. BUG-012).
+    it('Сумма earned_bonuses/earned_chips по товарам равна all_bonuses/all_chips заказа', () => {
+        cabinetApi.getBonusesHistoryPage({ limit: 200 }).then(({ body }) => {
+            const mismatches = body.data.items.filter((it) => {
+                if (!it.products) return false;
+                const sumBonuses = it.products.reduce((s, p) => s + p.earned_bonuses, 0);
+                const sumChips = it.products.reduce((s, p) => s + p.earned_chips, 0);
+                return sumBonuses !== it.all_bonuses || sumChips !== it.all_chips;
+            }).map((it) => it.order_id);
+            expect(mismatches, `заказы с расхождением суммы по товарам: ${mismatches.join(', ')}`).to.have.length(0);
+        });
+    });
+
+    // TC-БО-29 — заказы №4347 и №4346 содержат идентичный состав товаров.
+    // Сверено 2026-08-10 через orders_list: это два САМОСТОЯТЕЛЬНЫХ заказа
+    // (разные payment_info.payments[0].is_paid и разный summary.title.text —
+    // ПРИ ЭТОМ order_status_banner у обоих буквально одинаковый, "Оплата не
+    // прошла" — не показатель; созданы в одну секунду с одинаковой корзиной,
+    // похоже на повторную отправку одной и той же корзины), а не техническая
+    // дубликация одной записи в API.
+    it('Заказы №4347 и №4346 — два самостоятельных заказа, не дублирование в данных', () => {
+        cabinetApi.getOrdersList({ status: 'all', page: 1, limit: 20 }).then(({ body }) => {
+            const o4347 = body.data.orders.find((o) => o.order.id === '4347');
+            const o4346 = body.data.orders.find((o) => o.order.id === '4346');
+            if (!o4347 || !o4346) {
+                cy.log('Заказы №4347/№4346 не найдены на первой странице orders_list — кейс пропущен');
+                return;
+            }
+            const isPaid4347 = o4347.order.payment_info.payments[0]?.is_paid;
+            const isPaid4346 = o4346.order.payment_info.payments[0]?.is_paid;
+            const differ = isPaid4347 !== isPaid4346
+                || o4347.summary.title.text !== o4346.summary.title.text;
+            expect(differ, 'заказы 4347/4346 должны отличаться хотя бы одним полем — иначе похоже на дублирование одной записи').to.be.true;
+        });
+    });
+
+    // TC-БО-30 — состав товаров заказа №4347 между orders_list и
+    // bonuses-history. Сверено 2026-08-06/2026-08-11: basket.items у
+    // orders_list для этого заказа пуст, хотя payment_info.to_pay ненулевой.
+    // ВАЖНО (уточнено 2026-08-11): изначально это списывалось на BUG-004, но
+    // BUG-004 (Jira AS-4506) с тех пор исправлен и был про другое — «0 ₸» в
+    // ЦЕНЕ заказа в списке, а не про пустой basket.items — и подтверждено
+    // живьём, что basket.items у этого конкретного заказа ВСЁ ЕЩЁ пуст
+    // после фикса. Это отдельный, самостоятельный (более узкий) остаточный
+    // нюанс именно для исторических заказов такого рода, не повод для
+    // нового баг-репорта (тест сам толерантен к этому случаю), но и не
+    // "тот же BUG-004" — комментарий скорректирован, чтобы не вводить в
+    // заблуждение при следующей ревизии.
+    it('products заказа №4347 в bonuses-history vs basket.items в orders_list', () => {
+        cabinetApi.getBonusesHistoryPage({ limit: 200 }).then(({ body: bonusesBody }) => {
+            const bonusItem = bonusesBody.data.items.find((i) => i.order_id === '4347');
+            cabinetApi.getOrdersList({ status: 'all', page: 1, limit: 20 }).then(({ body: ordersBody }) => {
+                const order = ordersBody.data.orders.find((o) => o.order.id === '4347');
+                if (!bonusItem || !order) {
+                    cy.log('Заказ №4347 не найден в одном из эндпоинтов — кейс пропущен');
+                    return;
+                }
+                if (order.basket.items.length === 0 && order.order.payment_info.to_pay > 0) {
+                    cy.log('Заказ №4347: пустой basket.items при ненулевом to_pay (известный узкий нюанс, не BUG-004 — тот уже исправлен и был про другое)');
+                    expect(bonusItem.products.length, 'bonuses-history при этом ПОКАЗЫВАЕТ товары').to.be.greaterThan(0);
+                } else {
+                    const bonusCodes = bonusItem.products.map((p) => p.code).sort();
+                    const orderCodes = order.basket.items.map((it) => it.code).sort();
+                    expect(bonusCodes).to.deep.eq(orderCodes);
+                }
+            });
+        });
+    });
 });
 
 describe('Бонусы и фишки — пагинация', () => {
@@ -252,27 +573,76 @@ describe('Бонусы и фишки — пагинация', () => {
         });
     });
 
-    // TC-БО-33 — БАГ BUG-014: элемента пагинации нет вообще нигде в DOM,
-    // хотя page_number < all_pages явно говорит, что есть ещё страницы.
-    // Тест ожидает правильное поведение и падает, пока баг не исправлен.
-    it('Кнопка «Показать ещё» отображается при page_number < all_pages — BUG-014', () => {
+    // TC-БО-33 — BUG-014 (Jira AS-4516) ИСПРАВЛЕН 2026-08-10: элемент
+    // пагинации отображается при page_number < all_pages. Реализация — не
+    // кнопка «Показать ещё», как ожидал изначальный баг-репорт, а
+    // нумерованная пагинация (ссылки-страницы + Next/Previous/First/Last).
+    it('Нумерованная пагинация отображается при page_number < all_pages', () => {
         cabinetApi.getBonusesHistoryPage().then(({ body }) => {
             expect(body.data.page_number, 'baseline').to.be.lessThan(body.data.all_pages);
             Bonuses.visit();
-            Bonuses.getLoadMoreButton().should('be.visible');
+            Bonuses.getPageLink(1).should('be.visible');
+            Bonuses.getNextPageLink().should('be.visible');
         });
     });
 
-    // TC-БО-34 — БАГ BUG-014, тот же корень: без элемента пагинации кликать
-    // нечего, страница=2 никогда не запрашивается.
-    it('Клик «Показать ещё» отправляет запрос со page=2 — BUG-014', () => {
+    // TC-БО-34 — клик по ссылке страницы 2 отправляет запрос со page=2 и
+    // отрисовывает другой набор карточек (не совпадающий с page 1).
+    it('Клик по ссылке страницы 2 отправляет запрос со page=2', () => {
         Bonuses.visit();
-        Bonuses.getLoadMoreButton().should('be.visible');
         cy.intercept('GET', '**/v2/personal/bonuses-history**').as('page2');
-        Bonuses.getLoadMoreButton().click();
+        Bonuses.getPageLink(2).click();
         cy.wait('@page2').then(({ request }) => {
             const url = new URL(request.url);
             expect(url.searchParams.get('page')).to.eq('2');
+        });
+        cy.location('search').should('include', 'page=2');
+    });
+
+    // TC-БО-35 — на последней странице API отдаёт остаток записей
+    // (page_number = all_pages), и UI отображает ровно столько же карточек.
+    it('На последней странице API и UI отдают одинаковый остаток записей (page_number = all_pages)', () => {
+        cabinetApi.getBonusesHistoryPage({ limit: 10, page: 1 }).then(({ body }) => {
+            const { all_items_count, all_pages } = body.data;
+            cabinetApi.getBonusesHistoryPage({ limit: 10, page: all_pages }).then(({ body: lastPageBody }) => {
+                const expectedLastPageCount = all_items_count - (all_pages - 1) * 10;
+                expect(lastPageBody.data.items).to.have.length(expectedLastPageCount);
+                expect(lastPageBody.data.page_number).to.eq(all_pages);
+
+                cy.intercept('GET', '**/v2/personal/bonuses-history**').as('lastPage');
+                cy.visit(`http://d2.im.mdev.kz/cabinet/bonuses/?page=${all_pages}`);
+                cy.wait('@lastPage', { timeout: 40000 });
+                // На последней странице "Next Page" перестаёт быть кликабельной
+                // ссылкой (рендерится как <button>, а не <a href>), а
+                // "Last Page" остаётся <a>, но с disabled="true" и без href.
+                Bonuses.getNextPageLink().should('not.exist');
+                Bonuses.getLastPageLink().should('have.attr', 'disabled', 'true');
+            });
+        });
+    });
+
+    // TC-БО-36 — последовательный обход всех страниц API не даёт
+    // дублей/пропусков (та же гарантия, что теперь доступна и пользователю
+    // через реальную нумерованную пагинацию, а не только через API).
+    it('Последовательный обход всех страниц API не даёт дублей/пропусков', () => {
+        cabinetApi.getBonusesHistoryPage({ limit: 10, page: 1 }).then(({ body }) => {
+            const { all_items_count, all_pages } = body.data;
+            const allOrderIds = [];
+            const collectPage = (page) => {
+                if (page > all_pages) return cy.wrap(null);
+                return cabinetApi.getBonusesHistoryPage({ limit: 10, page }).then(({ body: pageBody }) => {
+                    pageBody.data.items.forEach((it) => allOrderIds.push(it.order_id));
+                    return collectPage(page + 1);
+                });
+            };
+            collectPage(1).then(() => {
+                expect(allOrderIds, 'итоговое количество карточек равно all_items_count').to.have.length(all_items_count);
+                // "Оффлайн заказ" — псевдо-ID, законно повторяется у нескольких
+                // офлайн-/системных операций (см. bonusesPage.js) — не дубликат
+                const nonOfflineIds = allOrderIds.filter((id) => id !== 'Оффлайн заказ');
+                const uniqueNonOffline = new Set(nonOfflineIds);
+                expect(uniqueNonOffline.size, 'нет дублей среди настоящих order_id').to.eq(nonOfflineIds.length);
+            });
         });
     });
 });

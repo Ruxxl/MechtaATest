@@ -27,10 +27,13 @@ describe('Личный кабинет — Хлебные крошки', () => {
         cy.url().should('eq', 'http://d2.im.mdev.kz/');
     });
 
-    // TC-ЛИ-3 — БАГ BUG-001: крошка "Личный кабинет" остаётся ссылкой без
-    // отличительного цвета, вместо неактивного текста текущей страницы.
-    // Тест целенаправленно ожидает правильное поведение и падает, пока баг не исправлен.
-    it('Крошка «Личный кабинет» неактивна (текущая страница) — BUG-001', () => {
+    // TC-ЛИ-3 — BUG-001 ЧАСТИЧНО ИСПРАВЛЕН (2026-08-10): крошка больше не
+    // <a> (эта проверка теперь проходит), но цвет всё ещё отличается от
+    // эталонного паттерна других страниц (text-mi-text-secondary вместо
+    // text-mi-text-primary) — эта часть не проверяется здесь тегом, см.
+    // BUG-001.md для деталей. Тест по-прежнему валиден для того, что он
+    // реально проверяет (структуру, не точный цвет).
+    it('Крошка «Личный кабинет» неактивна (текущая страница)', () => {
         Cabinet.getBreadcrumbItems().eq(1).find('a').should('not.exist');
         Cabinet.getBreadcrumbItems().eq(1).find('span[data-slot="link"]').should('exist');
     });
@@ -107,9 +110,9 @@ describe('Личный кабинет — Блок профиля (ФИО, те�
             // последнее совпадение по document order (сверено разведкой 2026-08-06).
             cy.get('input[name="email"]').last().should('have.value', profile_info.email);
 
-            // BUG-002: поле телефона показывает "+7 700 000-00-00" вместо реального
-            // номера аккаунта. Тест ожидает правильное поведение и падает, пока
-            // баг не исправлен.
+            // BUG-002 ИСПРАВЛЕН (2026-08-10): раньше поле телефона показывало
+            // захардкоженное "+7 700 000-00-00" вместо реального номера — теперь
+            // корректно предзаполнено реальными данными аккаунта.
             const digits = profile_info.phone.replace(/\D/g, '');
             const formatted = `+7 ${digits.slice(0, 3)} ${digits.slice(3, 6)}-${digits.slice(6, 8)}-${digits.slice(8, 10)}`;
             cy.get('input[name="contact_phone"]').should('have.value', formatted);
@@ -154,66 +157,33 @@ describe('Личный кабинет — Блоки «Моё избранное
         Cabinet.visit();
     });
 
-    // TC-ЛИ-25 — реальная сверка с API
-    it('Блок «Оставьте отзыв» соответствует GET /v2/reviews/waiting-products', () => {
-        cabinetApi.getWaitingProducts().then(({ body }) => {
-            if (body.data.products && body.data.products.length > 0) {
-                Cabinet.getReviewsTeaserHeading().should('be.visible');
-                cy.contains('h2', 'Оставьте отзыв').parents('div').first()
-                    .find('a[href^="/product/"]')
-                    .should('have.length.at.least', 1);
-            } else {
-                // TC-ЛИ-28 — на реальном аккаунте products/banner оба null => блок скрыт
-                cy.contains('h2', 'Оставьте отзыв').should('not.exist');
-            }
-        });
-    });
-
-    // БАГ BUG-029: живой, не мок-тест — сверяет РЕАЛЬНЫЕ данные избранного
-    // с тем, что фактически показывает блок «Оставьте отзыв». На этом
-    // аккаунте baseline именно такой, какой нужен для проверки (избранное
-    // непусто, waiting-products пуст) — воспроизводится без единого мока.
-    it('Блок «Оставьте отзыв» не дублирует картинки «Моё избранное» — BUG-029', () => {
-        cabinetApi.getWaitingProducts().then(({ body: waitingBody }) => {
-            expect(waitingBody.data.products, 'baseline: waiting-products пуст на этом аккаунте').to.be.null;
-
+    // TC-ЛИ-25/28 — ПЕРЕСМОТРЕНО ПОВТОРНО (2026-08-10, живая разведка): блок
+    // дашборда прошёл ещё одну редизайн-итерацию после того, как плитки были
+    // "статичные, без картинок" (см. историю BUG-029 в README этой папки).
+    // Сейчас ОБЕ плитки на /cabinet/ снова рендерят превью товаров-карточек
+    // — но, в отличие от исходного BUG-029 (2026-08-07), уже из ПРАВИЛЬНЫХ,
+    // РАЗНЫХ источников: «Оставьте отзыв» — из GET
+    // /v3/personal/products-for-reviews, «Моё избранное» — из GET
+    // /v3/favorites, без пересечения картинок между ними.
+    it('Плитка «Оставьте отзыв» показывает превью товаров из products-for-reviews, БЕЗ пересечения с «Моё избранное» — BUG-029 исправлен', () => {
+        cabinetApi.getProductsForReviews().then(({ body: reviewBody }) => {
             cabinetApi.getFavorites().then(({ body: favBody }) => {
-                expect(favBody.products.length, 'baseline: избранное непусто на этом аккаунте').to.be.greaterThan(0);
+                const reviewImages = reviewBody.products.map((p) => p.product.preview);
+                const favImages = favBody.products.map((p) => p.preview);
+                expect(reviewImages.length, 'baseline: есть товары к отзыву').to.be.greaterThan(0);
+                expect(favImages.length, 'baseline: есть избранное').to.be.greaterThan(0);
 
                 Cabinet.visit();
-                Cabinet.getFavoritesTeaserImages().then((favImages) => {
-                    Cabinet.getReviewsTeaserImages().then((reviewImages) => {
-                        expect(
-                            reviewImages,
-                            'BUG-029: виджет "Оставьте отзыв" показывает те же картинки, что "Моё избранное", вместо пустого состояния',
-                        ).to.not.deep.equal(favImages);
+                cy.contains('h2', 'Оставьте отзыв').should('be.visible')
+                    .parents('div').first().find('img').should(($imgs) => {
+                        expect($imgs.length, 'плитка рендерит хотя бы одно превью товара').to.be.greaterThan(0);
+                        [...$imgs].forEach((img) => {
+                            expect(reviewImages, `превью ${img.src} принадлежит products-for-reviews`).to.include(img.src);
+                            expect(favImages, `превью ${img.src} НЕ является картинкой из избранного`).to.not.include(img.src);
+                        });
                     });
-                });
             });
         });
-    });
-
-    // TC-ЛИ-28 (уточнённая версия) — БАГ BUG-029: единственный источник
-    // данных для "Оставьте отзыв" (waiting-products) полностью пуст, И
-    // избранное тоже пусто (мок) — блок не должен показывать НИКАКИЕ
-    // товары ни из какого источника. Полноценный cy.visit() (не SPA-переход)
-    // — сверено разведкой 2026-08-07, что мок должен ловиться уже на
-    // первой загрузке, SPA-переход внутри уже открытой вкладки этот кэш
-    // не обновляет и для проверки НЕ годится.
-    it('При пустых избранном И waiting-products блок «Оставьте отзыв» не показывает случайные товары (мок) — BUG-029', () => {
-        cy.intercept('GET', '**/v3/favorites**', {
-            statusCode: 200,
-            body: { products: [], count: 0 },
-        }).as('favorites');
-        cy.intercept('GET', '**/v2/reviews/waiting-products**', {
-            statusCode: 200,
-            body: { result: true, errors: [], data: { banner: null, products: null } },
-        }).as('waiting');
-        // Не используем Cabinet.visit() — свой intercept на тот же роут,
-        // алиас-гонка (см. project memory про cy.intercept alias race)
-        cy.visit(CABINET_URL);
-        cy.wait('@waiting', { timeout: 40000 });
-        cy.contains('h2', 'Оставьте отзыв').parents('div').eq(1).find('img').should('not.exist');
     });
 
     // TC-ЛИ-30
@@ -234,6 +204,14 @@ describe('Личный кабинет — Блоки «Моё избранное
         Cabinet.getFavoritesTeaserHeading().click();
         cy.url().should('include', '/favorites/');
     });
+
+    // Добавлено 2026-08-10 взамен удалённых BUG-029-тестов — раз плитка
+    // теперь чисто навигационная (см. комментарий выше), стоит явно
+    // покрыть, куда она ведёт.
+    it('Клик по плитке «Оставьте отзыв» ведёт на /cabinet/reviews/', () => {
+        Cabinet.getReviewsTeaserHeading().click();
+        cy.url().should('include', '/cabinet/reviews/');
+    });
 });
 
 describe('Личный кабинет — «Вы недавно смотрели»', () => {
@@ -241,7 +219,13 @@ describe('Личный кабинет — «Вы недавно смотрели
         cy.loginD2();
     });
 
-    // TC-ЛИ-33, TC-ЛИ-47 — реальная сверка названий карточек с API
+    // TC-ЛИ-33, TC-ЛИ-47 — реальная сверка названий карточек с API.
+    // ИЗВЕСТНАЯ ГОНКА (см. project memory про live-data race, аналог
+    // TC-МО-18/63 в orders.cy.js): изредка падает в ПОЛНОМ прогоне файла,
+    // когда более ранние тесты в этом же файле кликают по товарам (тем
+    // самым добавляя их в "Вы недавно смотрели") — новый просмотр может
+    // попасть в API чуть позже, чем ожидает этот тест. В изоляции проходит
+    // стабильно (проверено 3/3 повторов 2026-08-10). Не баг фронта.
     it('Карусель отображает товары, названия соответствуют GET /v3/personal/history', () => {
         cabinetApi.getHistory().then(({ body }) => {
             const items = body.data || body;
@@ -289,9 +273,15 @@ describe('Личный кабинет — «Вы недавно смотрели
                 return;
             }
             Cabinet.visit();
+            // Карусель горизontально скроллится, overflow:hidden на контейнере —
+            // товар с Trade-in может быть не первым и физически не попадать в
+            // видимую область, пока карусель не проскроллена до него (это
+            // нормальное поведение карусели, не баг). scrollIntoView() перед
+            // проверкой видимости, а не голый .should('be.visible').
             cy.contains('a[href^="/product/"]', tradeInItem.name)
                 .parents('div').eq(2)
                 .contains('Trade-in')
+                .scrollIntoView()
                 .should('be.visible');
         });
     });
@@ -422,11 +412,16 @@ describe('Личный кабинет — Негативные сценарии 
         cy.loginD2();
     });
 
-    // TC-ЛИ-77 — БАГ BUG-003: остальные независимые блоки (Мечта ГИД и т.п.)
-    // должны продолжать отображаться, но фактически пропадает вся правая
-    // колонка целиком. Тест ожидает правильное поведение и падает, пока
-    // баг не исправлен.
-    it('GET /v2/personal с result:false не крашит страницу — BUG-003', () => {
+    // TC-ЛИ-77 — BUG-003 ИСПРАВЛЕН ЧАСТИЧНО (2026-08-10): раньше при ошибке
+    // /v2/personal пропадала ВСЯ правая колонка целиком (включая полностью
+    // независимые от неё блоки) — это исправлено, остальные блоки (Мечта ГИД
+    // и т.п.) корректно продолжают отображаться. НО остаётся более узкий
+    // BUG-033: в блоке профиля (сайдбар) вторая строка под именем буквально
+    // показывает текст "undefined" вместо пустоты/skeleton. Тест ниже
+    // намеренно продолжает падать на этом — assert зафиксирован как
+    // ожидаемое (правильное) поведение, тест должен сам стать зелёным, когда
+    // BUG-033 исправят.
+    it('GET /v2/personal с result:false не крашит страницу', () => {
         cy.intercept('GET', '**/v2/personal', {
             statusCode: 200,
             body: { result: false, errors: ['Внутренняя ошибка'], data: null },
@@ -440,6 +435,7 @@ describe('Личный кабинет — Негативные сценарии 
         // текстовое содержимое инлайн-<script> тегов аналитики (там буквально
         // встречаются строки "undefined"/"null" как часть JS-кода), что даёт
         // ложное срабатывание, не имеющее отношения к реальному UI.
+        // BUG-033: пока падает здесь — блок профиля рендерит "undefined".
         cy.get('main').should('not.contain.text', 'undefined');
     });
 
@@ -458,13 +454,18 @@ describe('Личный кабинет — Негативные сценарии 
         cy.get('main').should('not.contain.text', 'null');
     });
 
-    // TC-ЛИ-79 — БАГ BUG-003, см. комментарий к тесту result:false выше
-    it('GET /v2/personal — таймаут/500 не роняет всю страницу — BUG-003', () => {
+    // TC-ЛИ-79 — BUG-003 ИСПРАВЛЕН ЧАСТИЧНО, см. комментарий к тесту result:false
+    // выше. Живьём подтверждено, что BUG-033 ("undefined" в блоке профиля)
+    // воспроизводится и на голой 500-ошибке (не только на result:false),
+    // поэтому та же проверка добавлена и сюда.
+    it('GET /v2/personal — таймаут/500 не роняет всю страницу', () => {
         cy.intercept('GET', '**/v2/personal', { statusCode: 500, body: {} }).as('personal');
         Cabinet.visit();
         cy.wait('@personal');
         Cabinet.getMechtaGuideHeading().should('be.visible');
         Cabinet.getSidebarNav().should('be.visible');
+        // BUG-033: пока падает здесь тоже — блок профиля рендерит "undefined".
+        cy.get('main').should('not.contain.text', 'undefined');
     });
 
     // TC-ЛИ-81
@@ -476,14 +477,17 @@ describe('Личный кабинет — Негативные сценарии 
         cy.get('h1').should('contain.text', 'Личный кабинет');
     });
 
-    // TC-ЛИ-83
-    it('GET /v2/reviews/waiting-products с result:false не блокирует остальную страницу', () => {
-        cy.intercept('GET', '**/v2/reviews/waiting-products', {
-            statusCode: 200,
-            body: { result: false, errors: ['error'], data: null },
-        }).as('waiting');
+    // TC-ЛИ-83 — мигрировано (2026-08-10) на GET /v3/personal/products-for-reviews,
+    // тот же эндпоинт, что и виджет «Оставьте отзыв» реально вызывает
+    // (старый /v2/reviews/waiting-products фронт больше не вызывает вовсе,
+    // тест падал с "No request ever occurred").
+    it('GET /v3/personal/products-for-reviews с ошибкой не блокирует остальную страницу', () => {
+        cy.intercept('GET', '**/v3/personal/products-for-reviews', {
+            statusCode: 500,
+            body: {},
+        }).as('productsForReviews');
         Cabinet.visit();
-        cy.wait('@waiting');
+        cy.wait('@productsForReviews');
         cy.get('h1').should('contain.text', 'Личный кабинет');
         Cabinet.getMechtaGuideHeading().should('be.visible');
     });
@@ -553,7 +557,10 @@ describe('Личный кабинет — Боковое меню, навига�
             });
     });
 
-    // TC-ЛИ-103
+    // TC-ЛИ-103 — только UI сразу после редиректа, БЕЗ reload. Из-за
+    // BUG-034 (см. ниже) сам по себе флейков: иногда шапка сразу после
+    // редиректа ещё показывает старое состояние, а к моменту проверки
+    // успевает обновиться визуально, даже если сессия на бэке жива.
     it('Выход из аккаунта по пункту «Выйти»', () => {
         Cabinet.clickLogout();
         cy.url().should('eq', 'http://d2.im.mdev.kz/');
@@ -561,6 +568,52 @@ describe('Личный кабинет — Боковое меню, навига�
         // остаться в переходном состоянии сразу после редиректа
         cy.wait(500);
         cy.contains('Войти').should('be.visible');
+    });
+
+    // BUG-034 (Jira AS-4555): POST /v2/logout отвечает 200 {result:true},
+    // но сессия на бэкенде иногда НЕ инвалидируется — после reload прямой
+    // заход на /cabinet/ снова показывает реальные данные аккаунта. Живой
+    // разведкой (2026-08-10, 16 повторов через 4 отдельных прогона)
+    // воспроизведено примерно в 11/16 случаев — интермиттентно, не 100%.
+    // Тест намеренно делает несколько попыток подряд в одном it() (не
+    // ретрай Cypress, а именно повтор сценария) — так и сама природа гонки:
+    // единичный прогон легко может попасть в "повезло" ветку.
+    it('После «Выйти» + reload сессия реально завершена на бэкенде (несколько попыток) — BUG-034', () => {
+        const attempts = 4;
+        let stillLoggedInCount = 0;
+
+        function oneAttempt(i) {
+            cy.loginD2();
+            Cabinet.visit();
+            cy.intercept('GET', '**/v2/logout**').as('logoutReq');
+            cy.intercept('POST', '**/v2/logout**').as('logoutReqPost');
+            Cabinet.clickLogout();
+            cy.wait('@logoutReqPost', { timeout: 15000 });
+            cy.url().should('eq', 'http://d2.im.mdev.kz/');
+            cy.reload();
+            cy.wait(1200);
+            cy.visit(CABINET_URL, { failOnStatusCode: false });
+            cy.wait(1500);
+            cy.get('body').then(($body) => {
+                if ($body.text().includes('Ваш баланс') && !$body.text().includes('Авторизуйтесь')) {
+                    stillLoggedInCount += 1;
+                    cy.log(`попытка ${i}: сессия ЖИВА после reload (BUG-034)`);
+                } else {
+                    cy.log(`попытка ${i}: сессия корректно завершена`);
+                }
+            });
+        }
+
+        for (let i = 0; i < attempts; i += 1) {
+            oneAttempt(i);
+        }
+
+        cy.then(() => {
+            expect(
+                stillLoggedInCount,
+                `BUG-034: сессия осталась активной после «Выйти»+reload в ${stillLoggedInCount}/${attempts} попытках (ожидается 0/${attempts})`,
+            ).to.eq(0);
+        });
     });
 });
 

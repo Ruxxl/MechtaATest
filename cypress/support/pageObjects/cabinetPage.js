@@ -100,20 +100,6 @@ class CabinetPage {
         return cy.contains('h2', 'Мечта ГИД');
     }
 
-    // Картинки превью-товаров внутри блока — используется для BUG-029
-    // (сверка "Оставьте отзыв" vs "Моё избранное"). Climb=2 от заголовка —
-    // ровно контейнер с рядом миниатюр, сверено разведкой 2026-08-07
-    // (climb=3+ уже захватывает соседние блоки/всю страницу).
-    getFavoritesTeaserImages() {
-        return this.getFavoritesTeaserHeading().parents('div').eq(1)
-            .find('img').then(($imgs) => [...new Set([...$imgs].map((img) => new URL(img.src).pathname))]);
-    }
-
-    getReviewsTeaserImages() {
-        return this.getReviewsTeaserHeading().parents('div').eq(1)
-            .find('img').then(($imgs) => [...new Set([...$imgs].map((img) => new URL(img.src).pathname))]);
-    }
-
     // ---------- "Вы недавно смотрели" ----------
 
     getRecentlyViewedHeading() {

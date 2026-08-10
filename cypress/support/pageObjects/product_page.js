@@ -14,20 +14,31 @@ const selectors = {
     product_credit: '#product-option-card-1',
     product_shops_button: '#product-shops',
     product_gift_button: '#product-gift-button',
+    // Разведка 2026-08-10: добавлено новое поле "Артикул" — теперь ПЕРВАЯ строка
+    // блока характеристик, из-за чего ВСЕ последующие product-characteristic-key/value
+    // id сдвинулись на +1 относительно того, что было раньше (Бренд был key-1/value-1,
+    // теперь key-2/value-2, и т.д.). Значение поля — НЕ отдельное mainProperties[]
+    // из /product/{slug} (тот массив как был 6 записей без Артикула, так и остался),
+    // а производное от корневого поля `code` ("17200007628" -> "07628"):
+    // фронт берёт code.slice(6) (отбрасывает первые 6 символов), а НЕ последние 5 —
+    // подтверждено мок-разведкой с укороченным code="123" -> отображается "" (пусто),
+    // а не "123" (что дал бы .slice(-5)). У поля Артикул нет отдельного id для
+    // значения (просто <p> внутри кнопки копирования) — берём через articleValue().
+    article_product_properties_key: '#product-characteristic-key-1',
     //main properties
-    brand_product_properties_name: '#product-characteristic-key-1',
-    model_product_properties_name: '#product-characteristic-key-2',
-    srok_garant_product_properties_name: "#product-characteristic-key-3",
-    vstroyennaya_memory_main_properties_name: '#product-characteristic-key-4',
-    operativ_memory_main_properties_name: '#product-characteristic-key-5',
-    tip_matrica_ekrana_main_properties_name: '#product-characteristic-key-6',
+    brand_product_properties_name: '#product-characteristic-key-2',
+    model_product_properties_name: '#product-characteristic-key-3',
+    srok_garant_product_properties_name: "#product-characteristic-key-4",
+    vstroyennaya_memory_main_properties_name: '#product-characteristic-key-5',
+    operativ_memory_main_properties_name: '#product-characteristic-key-6',
+    tip_matrica_ekrana_main_properties_name: '#product-characteristic-key-7',
     //main properties value
-    brand_product_properties_value: '#product-characteristic-value-1',
-    model_product_properties_value: '#product-сharacteristics-value-2',
-    srok_garant_product_properties_value: '#product-сharacteristics-value-3',
-    vstroyennaya_memory_main_properties_value: '#product-сharacteristics-value-4',
-    operativ_memory_main_properties_value: '#product-сharacteristics-value-5',
-    tip_matrica_ekrana_main_properties_value: '#product-сharacteristics-value-6'
+    brand_product_properties_value: '#product-characteristic-value-2',
+    model_product_properties_value: '#product-сharacteristics-value-3',
+    srok_garant_product_properties_value: '#product-сharacteristics-value-4',
+    vstroyennaya_memory_main_properties_value: '#product-сharacteristics-value-5',
+    operativ_memory_main_properties_value: '#product-сharacteristics-value-6',
+    tip_matrica_ekrana_main_properties_value: '#product-сharacteristics-value-7'
 };
 
 class productPage {
@@ -201,6 +212,55 @@ class productPage {
                     });
             });
         });
+    }
+
+    // --- Артикул (новое поле, разведка 2026-08-10) ---
+    // Строка "Артикул" — та же разметка #product-property, что и у остальных
+    // характеристик (см. selectors выше), но БЕЗ отдельного id у значения:
+    // это <p> внутри <button> (кнопка копирования), а не самостоятельный span/a.
+    // Скоупимся через родителя элемента key.
+    get articleRow() {
+        return cy.get(selectors.article_product_properties_key).parent();
+    }
+
+    get articleValue() {
+        return this.articleRow.find('p');
+    }
+
+    get articleCopyButton() {
+        return this.articleRow.find('button');
+    }
+
+    // Отображаемое значение — НЕ отдельное поле API, а code.slice(6) корневого
+    // ответа /product/{slug} (см. комментарий у article_product_properties_key)
+    check_article() {
+        cy.wait('@product', { timeout: 20000 }).then((interception) => {
+            expect(interception.response.statusCode).to.eq(200);
+
+            const { code } = interception.response.body;
+            expect(code, 'у товара должен быть указан code').to.exist;
+            const expectedArticle = code.slice(6);
+
+            cy.get(selectors.article_product_properties_key).should('have.text', 'Артикул');
+            this.articleValue.should('have.text', expectedArticle);
+        });
+    }
+
+    // Копирование по клику на иконку рядом со значением — тот же паттерн тоста,
+    // что и у копирования названия товара (см. check_productName_copy_button),
+    // но с другим текстом: "Артикул товара скопирован".
+    // ВАЖНО (разведка 2026-08-10): обработчик клика висит на самой ИКОНКЕ
+    // (<span class="iconify i-ph:copy-light">), а не на оборачивающей <button> —
+    // клик Cypress по центру button (где обычно оказывается текст "07628", т.к.
+    // flex-layout кладёт <p> раньше <span>) НИКАКОГО эффекта не даёт, тост не
+    // появляется вообще (ни разу за десятки попыток, включая {force: true}).
+    // Целиться нужно строго в дочерний span[class*="iconify"] — тогда тост
+    // появляется стабильно. Это НЕ баг "недоверенного клика" (см. skill п.4,
+    // untrusted-click limitation) — реальный клик мышью в это же место (иконку)
+    // тоже срабатывает; проблема была в том, ПО ЧЕМУ именно кликать.
+    check_article_copy_button() {
+        this.articleCopyButton.find('span[class*="iconify"]').should('be.visible').click();
+        cy.get('[data-slot="title"]').should('have.text', 'Артикул товара скопирован');
     }
 
     check_only_shop_sticker() {

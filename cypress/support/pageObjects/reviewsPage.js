@@ -4,9 +4,11 @@ const REVIEWS_URL = 'http://d2.im.mdev.kz/cabinet/reviews/';
 class ReviewsPage {
     visit() {
         cy.visit(REVIEWS_URL);
-        // ВАЖНО: НЕ ждём intercept на waiting-products/reviews/personal
-        // здесь намеренно — см. BUG-020, эти запросы часто вообще не
-        // происходят на этой странице. Ждём простого рендера контента.
+        // ВАЖНО (обновлено 2026-08-10): раздел переехал на единственный
+        // эндпоинт GET /v3/personal/reviews (см. cabinetApi.getPersonalReviewsV3) —
+        // он реально вызывается при заходе. Не ждём его тут через intercept
+        // намеренно, чтобы не плодить гонку алиасов с тестами, которые сами
+        // ставят свой intercept ДО visit(); ждём простого рендера контента.
         cy.contains('Отзывы').should('be.visible');
     }
 

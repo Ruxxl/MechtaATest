@@ -4,5 +4,53 @@
     "jiraKey": "AS-4540",
     "area": ".",
     "createdAt": "2026-08-07T11:59:43.221Z"
+  },
+  "BugReport/Личный кабинет/orders/BUG-030-order-status-banner-null-for-valid-order.md": {
+    "id": "BUG-030",
+    "jiraKey": "AS-4543",
+    "area": ".",
+    "createdAt": "2026-08-10T03:42:39.521Z"
+  },
+  "BugReport/Личный кабинет/bonuses/BUG-031-expiring-block-never-renders.md": {
+    "id": "BUG-031",
+    "jiraKey": "AS-4544",
+    "area": ".",
+    "createdAt": "2026-08-10T05:00:34.021Z"
+  },
+  "BugReport/Личный кабинет/cabinet_overview/BUG-032-inconsistent-page-title-card-styling.md": {
+    "id": "BUG-032",
+    "jiraKey": "AS-4547",
+    "area": ".",
+    "createdAt": "2026-08-10T08:44:44.518Z"
+  },
+  "BugReport/Личный кабинет/cabinet_overview/BUG-033-undefined-text-in-profile-block-on-personal-error.md": {
+    "id": "BUG-033",
+    "jiraKey": "AS-4548",
+    "area": ".",
+    "createdAt": "2026-08-10T10:33:32.926Z"
+  },
+  "BugReport/Личный кабинет/cabinet_overview/BUG-001-breadcrumb-current-page-not-marked.md": {
+    "id": "BUG-001",
+    "jiraKey": "AS-4550",
+    "area": ".",
+    "createdAt": "2026-08-10T10:41:14.264Z"
+  },
+  "BugReport/Личный кабинет/cabinet_overview/BUG-029-review-widget-shows-favorites-not-review-eligible-products.md": {
+    "id": "BUG-029",
+    "jiraKey": "AS-4551",
+    "area": ".",
+    "createdAt": "2026-08-10T10:41:15.756Z"
+  },
+  "BugReport/Личный кабинет/cabinet_overview/BUG-034-logout-does-not-terminate-session.md": {
+    "id": "BUG-034",
+    "jiraKey": "AS-4555",
+    "area": ".",
+    "createdAt": "2026-08-10T11:55:03.544Z"
+  },
+  "BugReport/Личный кабинет/edit_profile/BUG-026-wrong-error-message-for-server-validation.md": {
+    "id": "BUG-026",
+    "jiraKey": "AS-4531",
+    "area": ".",
+    "createdAt": "2026-08-10T11:59:00.000Z"
   }
 }

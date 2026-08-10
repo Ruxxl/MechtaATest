@@ -103,7 +103,9 @@ describe('Страница товара: хлебные крошки и гале
             cy.wait('@product', { timeout: 20000 }).then((interception) => {
                 const { brand } = interception.response.body;
                 expect(brand, 'у товара должен быть указан бренд').to.exist;
-                cy.get('#product-characteristic-value-1')
+                // id сдвинулся на +1 после добавления поля "Артикул" перед Брендом
+                // (разведка 2026-08-10, см. product_page.js -> selectors)
+                cy.get('#product-characteristic-value-2')
                     .should('have.attr', 'href')
                     .and('include', `/brands/${brand.slug}/`);
             });
