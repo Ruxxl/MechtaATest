@@ -264,7 +264,12 @@
       "Bash(pkill -f cabinet_overview)",
       "Bash(sed -n '/describe\\(.Личный кабинет — Боковое меню, навигация/,/^}\\);$/p' /Users/ruslanisin/Documents/MechtaATest/cypress/e2e/main_test/cabinet/cabinet_overview.cy.js)",
       "Bash(tee /tmp/cabinet_overview_truly_final.log)",
-      "Bash(tee /tmp/edit_profile_run.log)"
+      "Bash(tee /tmp/edit_profile_run.log)",
+      "Bash(unzip -o \"Автотесты-и-ИИ-презентация.pptx\" -d /tmp/pptx_extract)",
+      "Bash(sort -u -t- -k2 -n)",
+      "Bash(grep -v \"^$\")",
+      "Bash(awk '/^## 4\\\\./{f=1} /^## 5\\\\./{f=0} f' .claude/skills/mechta-e2e-testing/SKILL.md)",
+      "Bash(awk '/^## 8\\\\./{f=1} /^## 9\\\\./{f=0} f' .claude/skills/mechta-e2e-testing/SKILL.md)"
     ]
   }
 }

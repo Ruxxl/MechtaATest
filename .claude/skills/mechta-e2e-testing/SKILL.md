@@ -477,14 +477,20 @@ environment-specific) via live re-verification** — don't wait to be asked:
    `JIRA_EMAIL:JIRA_API_TOKEN`.
 2. **Transition it** — no dedicated script, ad-hoc `POST
    /rest/api/3/issue/{key}/transitions` with `{transition:{id:"31"}}` (this project's
-   "Готово") for a real fix, or `{id:"32"}` ("Не актуален") for rejected/env-specific —
-   plus an explanatory comment (`POST .../comment`, ADF body
-   `{type:"doc",version:1,content:[{type:"paragraph",content:[{type:"text",text:"..."}]}]}`)
-   on the rejected path so the reasoning isn't lost. Full id table for this project (from
-   `GET .../transitions`, re-verify if it ever looks wrong rather than trusting this
-   blindly on a different Jira project): 2=В работе, 3=Готов к тестированию,
-   4=На тестировании, 5=Код ревью, 6=Ожидает релиза, 7=В блоке, 9=Дизайн ревью,
-   11=К выполнению, 31=Готово, 32=Не актуален.
+   "Готово"). **Always `id:"31"`, unconditionally** — a real code fix, a rejected/not-a-bug
+   finding, an environment-specific limitation, a duplicate, a false-positive-from-wrong-mock,
+   all of it (explicit project owner rule, 2026-08-11: "Статус в Jira всегда меняй на
+   Готово" regardless of why the bug is being closed — this collapsed an earlier
+   two-status convention that used `id:"32"`/"Не актуален" for non-fix closures; don't
+   revive that distinction). Always add an explanatory comment (`POST .../comment`, ADF
+   body `{type:"doc",version:1,content:[{type:"paragraph",content:[{type:"text",text:"..."}]}]}`)
+   when the closure reason isn't "actually fixed" — the *substance* of why it's closed
+   belongs in that comment and in the BugReport README, since the status field no longer
+   carries it. Full id table for this project (from `GET .../transitions`, re-verify if
+   it ever looks wrong rather than trusting this blindly on a different Jira project):
+   2=В работе, 3=Готов к тестированию, 4=На тестировании, 5=Код ревью, 6=Ожидает релиза,
+   7=В блоке, 9=Дизайн ревью, 11=К выполнению, 31=Готово, 32=Не актуален (32 exists in
+   the workflow but this project doesn't use it for bug closure anymore).
 3. **Clean up the repo**: delete `BugReport/<area>/BUG-NNN-*.md`, move its README row
    into an "Исправленные баги"/"Отклонено как не баг" section (keep the history, don't
    just vanish it), `grep -rn "BUG-NNN-slug"` repo-wide to fix any dead cross-links from

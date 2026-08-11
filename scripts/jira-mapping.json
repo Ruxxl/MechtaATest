@@ -31,9 +31,10 @@
   },
   "BugReport/Личный кабинет/cabinet_overview/BUG-001-breadcrumb-current-page-not-marked.md": {
     "id": "BUG-001",
-    "jiraKey": "AS-4550",
+    "jiraKey": "AS-4503",
     "area": ".",
-    "createdAt": "2026-08-10T10:41:14.264Z"
+    "createdAt": "2026-08-06T19:11:26.761+05:00",
+    "note": "AS-4503 — оригинальный тикет (создан не этим скриптом, до появления mapping.json). AS-4550 был по ошибке создан 2026-08-10 как дубликат, закрыт 2026-08-11 в «Готово» (по решению владельца проекта — все закрытые баги всегда «Готово», см. комментарий в тикете со ссылкой на AS-4503 как причиной)."
   },
   "BugReport/Личный кабинет/cabinet_overview/BUG-029-review-widget-shows-favorites-not-review-eligible-products.md": {
     "id": "BUG-029",
@@ -52,5 +53,41 @@
     "jiraKey": "AS-4531",
     "area": ".",
     "createdAt": "2026-08-10T11:59:00.000Z"
+  },
+  "BugReport/Личный кабинет/bonuses/BUG-010-cancelled-orders-show-bonus-credit.md": {
+    "id": "BUG-010",
+    "jiraKey": "AS-4512",
+    "area": ".",
+    "note": "не создан этим скриптом — найден при сверке с Jira 2026-08-11"
+  },
+  "BugReport/Личный кабинет/orders/BUG-005-orders-count-arithmetic-mismatch.md": {
+    "id": "BUG-005",
+    "jiraKey": "AS-4507",
+    "area": ".",
+    "note": "не создан этим скриптом — найден при сверке с Jira 2026-08-11"
+  },
+  "BugReport/Личный кабинет/orders/BUG-009-payment-failed-banner-not-shown-for-some-orders.md": {
+    "id": "BUG-009",
+    "jiraKey": "AS-4511",
+    "area": ".",
+    "note": "не создан этим скриптом — найден при сверке с Jira 2026-08-11"
+  },
+  "_deleted_reviews_BUG-021": {
+    "id": "BUG-021",
+    "jiraKey": "AS-4525",
+    "area": ".",
+    "note": "файл BugReport удалён (не баг — расхождение крошки/заголовка признано намеренным дизайном, подтверждено пользователем 2026-08-11), тикет переведён в «Готово» (по решению владельца проекта — все закрытые баги всегда «Готово»)"
+  },
+  "_deleted_coupons_BUG-018": {
+    "id": "BUG-018",
+    "jiraKey": "AS-4522",
+    "area": ".",
+    "note": "файл BugReport удалён (баг исправлен), Купоны/README.md тоже удалён вместе с папкой — тикет оставлен для истории"
+  },
+  "_deleted_coupons_BUG-019": {
+    "id": "BUG-019",
+    "jiraKey": "AS-4523",
+    "area": ".",
+    "note": "файл BugReport удалён (баг исправлен), Купоны/README.md тоже удалён вместе с папкой — тикет оставлен для истории"
   }
 }

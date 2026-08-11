@@ -92,22 +92,26 @@ describe('Бонусы и фишки — блок «Ваш баланс»', () =
         });
     });
 
-    // TC-БО-7 — БАГ BUG-031: в реальных данных nearest_expiration_date/
-    // expiration_total сейчас всегда пустые, поэтому подставляем мок с
-    // реалистичными значениями напрямую (не через Bonuses.visit(), чтобы не
-    // столкнуться с перехватом того же роута без подмены тела — см. visit()
-    // в bonusesPage.js).
-    it('Блок «X сгорят [дата]» появляется при заполненном nearest_expiration_date — BUG-031', () => {
-        cy.intercept('GET', '**/v2/personal/bonuses-history**', (req) => {
+    // TC-БО-7 — БЫЛ БАГ-031, ОТКЛОНЁН КАК ЛОЖНОЕ СРАБАТЫВАНИЕ (2026-08-11,
+    // Jira AS-4544 «Не актуален»): исходное расследование мокало
+    // /v2/personal/bonuses-history (data.all_data/data.chips), но блок
+    // «X сгорят» реально читает эти поля из GET /v2/personal
+    // (data.bonus_info/data.chips_info) — подтверждено живьём на реальном
+    // аккаунте с ненулевыми бонусами/фишками (2699/8), где блок отображался
+    // корректно. Мок исправлен на правильный эндпоинт.
+    it('Блок «X сгорят [дата]» появляется при заполненном nearest_expiration_date', () => {
+        cy.intercept('GET', '**/v2/personal', (req) => {
             req.continue((res) => {
-                res.body.data.all_data.nearest_expiration_date = '15.09.2026';
-                res.body.data.all_data.expiration_total = 12345;
-                res.body.data.chips.nearest_expiration_date = '15.09.2026';
-                res.body.data.chips.expiration_total = 42;
+                if (res.body && res.body.data) {
+                    res.body.data.bonus_info.nearest_expiration_date = '11.08.2031';
+                    res.body.data.bonus_info.expiration_total = 2699;
+                    res.body.data.chips_info.nearest_expiration_date = '30.12.2026';
+                    res.body.data.chips_info.expiration_total = 8;
+                }
             });
-        }).as('bonusesExpiringMock');
+        }).as('personalExpiringMock');
         cy.visit(BONUSES_URL);
-        cy.wait('@bonusesExpiringMock', { timeout: 40000 });
+        cy.wait('@personalExpiringMock', { timeout: 40000 });
         cy.contains(/сгор[ия]т/).should('be.visible');
     });
 

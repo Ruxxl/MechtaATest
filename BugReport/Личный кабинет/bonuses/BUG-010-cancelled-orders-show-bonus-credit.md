@@ -19,7 +19,7 @@
    — выписать `order.id` всех заказов с `current_status: "canceled"`.
 2. `GET http://api.d.im.mdev.kz/v2/personal/bonuses-history?page=1&limit=10`
    — найти среди `items[]` записи с теми же `order_id`.
-3. Открыть `/cabinet/bonuses/` в браузере и найти те же карточки заказов.
+3. Открыть `/cabinet/bonuses/` в браузере и найти те же карточки заказов.Под р
 
 ## Ожидаемый результат
 
