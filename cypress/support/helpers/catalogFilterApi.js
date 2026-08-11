@@ -37,10 +37,16 @@ export function getCatalogFilters(slug, promotion, properties = {}, { headers = 
 }
 
 export function getCatalogProducts(slug, promotion, {
-    properties = {}, page = 1, pageSize = 24, orderBy = 'sort', direction = 'desc', headers = {}, failOnStatusCode = true,
+    properties = {}, page = 1, pageSize = 24, orderBy = 'sort', direction = 'desc', minPrice, maxPrice, headers = {}, failOnStatusCode = true,
 } = {}) {
     const propsQuery = buildPropertiesQuery(properties);
-    const url = `${API_BASE}/catalog/products?slug=${encodeURIComponent(slug)}&orderBy=${orderBy}&direction=${direction}&page=${page}&pageSize=${pageSize}&promotion=${encodeURIComponent(promotion)}${propsQuery ? `&${propsQuery}` : ''}`;
+    // minPrice/maxPrice — отдельные query-параметры (не properties[...]), см. разведку
+    // 2026-08-11: фронт /section/{slug}/ шлёт их именно так при вводе в поля "От"/"До"
+    const priceQuery = [
+        minPrice !== undefined ? `minPrice=${minPrice}` : null,
+        maxPrice !== undefined ? `maxPrice=${maxPrice}` : null,
+    ].filter(Boolean).join('&');
+    const url = `${API_BASE}/catalog/products?slug=${encodeURIComponent(slug)}&orderBy=${orderBy}&direction=${direction}&page=${page}&pageSize=${pageSize}&promotion=${encodeURIComponent(promotion)}${propsQuery ? `&${propsQuery}` : ''}${priceQuery ? `&${priceQuery}` : ''}`;
     return cy.request({
         method: 'GET',
         url,
