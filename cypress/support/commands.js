@@ -35,6 +35,25 @@ Cypress.Commands.add('loginD2', () => {
     });
 });
 
+// Логин на тестовом стенде d5.im.mdev.kz — отдельный бэкенд (api.d5.im.mdev.kz),
+// новый эквайринг (test-epay.epayment.kz) подключён только здесь. Тот же паттерн,
+// что и у loginD2 (см. комментарий там про result:true + непустой errors —
+// та же несостыковка контракта воспроизводится и тут, сессия всё равно создаётся).
+Cypress.Commands.add('loginD5', () => {
+    cy.request({
+        method: 'POST',
+        url: 'http://api.d5.im.mdev.kz/v2/login',
+        headers: { Accept: 'application/json' },
+        body: {
+            phone: '0000000000',
+            sms_code: '0000',
+        },
+    }).then((response) => {
+        expect(response.status).to.eq(200);
+        expect(response.body.result).to.eq(true);
+    });
+});
+
 // После добавления товара в корзину сайт иногда показывает модалку апсела
 // сопутствующих аксессуаров ("Выберите зарядное устройство" и т.п.).
 // Закрываем её кнопкой "Продолжить", если она появилась, иначе ничего не делаем.

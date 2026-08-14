@@ -61,6 +61,7 @@ beforeEach(() => {
             message.includes("Cannot read properties of null (reading 'document')") || // Ошибки null
             message.includes('ResizeObserver loop completed with undelivered notifications') || // Безобидное предупреждение карты (2GIS)
             message.includes('Tracker not initialized') || // Mindbox падает сам на себя из-за наших же перехватов его запросов
+            message.includes('An unknown error has occurred') || // Google Pay JS на странице эквайера (test-epay.epayment.kz) — падает необработанным promise rejection в headless Cypress без реального Google-аккаунта, с разным "details" ([object Response], undefined и т.п.); в ручном тестировании через настоящий Chrome не воспроизводится (см. checkout_card_payment_regress.cy.js)
             message.toLowerCase().includes('script error') || // Кросс-доменная ошибка стороннего скрипта (чат-виджет/реклама/аналитика) без деталей — не код приложения
             !message // на некоторых кросс-доменных ошибках message приходит пустым
         ) {

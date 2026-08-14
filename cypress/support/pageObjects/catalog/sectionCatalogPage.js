@@ -62,6 +62,42 @@ class SectionCatalogPage {
         return cy.contains(/^\d+\s+товар/);
     }
 
+    // Уникальные ссылки на карточки товаров, реально ОТРИСОВАННЫЕ на
+    // странице (каждая карточка обычно даёт 2-3 <a href="/product/...">:
+    // картинка/название/кнопка) — используется, чтобы сверить не только
+    // totalCount из сетевого ответа, но и фактический рендер. Подтверждено
+    // живой разведкой 2026-08-11: на /section/personalnye-kompyutery/
+    // ?properties[brend][]=xg unique-count (10) точно совпал с totalCount API.
+    // ВАЖНО: скоуп через 'body' + jQuery .find(), а не голый cy.get(selector)
+    // — у cy.get() с нулём совпадений нет "спокойного" пути вернуть пустой
+    // массив, он ретраит и падает с "never found it"; это ломает ровно тот
+    // случай, ради которого метод чаще всего и нужен — пустая выдача (0
+    // карточек) после сужающего фильтра/нерелевантной страницы пагинации.
+    getRenderedProductSlugs() {
+        return cy.get('body').then(($body) => {
+            const hrefs = [...$body[0].querySelectorAll('a[href^="/product/"]')].map((el) => el.getAttribute('href'));
+            return [...new Set(hrefs)];
+        });
+    }
+
+    // Retry-способная версия для случаев, когда карточки ещё не успели
+    // отрисоваться сразу после того, как сетевой ответ перехвачен (сетевой
+    // wait ловит МОМЕНТ ответа, а не момент рендера) — обнаружено 2026-08-11:
+    // `getRenderedProductSlugs().should('have.length', N)` для N > 0 иногда
+    // ловил 0 сразу после applyFiltersWithCount (простой .then() внутри
+    // getRenderedProductSlugs не переигрывается так же надёжно, как
+    // `.should(callback)` — а вот сценарий N === 0 (пустая выдача) через
+    // getRenderedProductSlugs проходил стабильно, поэтому тот метод остаётся
+    // как есть для этого случая). Здесь — офиц. retry-безопасная форма
+    // Cypress: `.should(callback)` переигрывает ВЕСЬ callback, пока он не
+    // перестанет бросать/не истечёт таймаут.
+    assertRenderedProductCount(expectedCount) {
+        cy.get('body', { timeout: 15000 }).should(($body) => {
+            const hrefs = [...$body[0].querySelectorAll('a[href^="/product/"]')].map((el) => el.getAttribute('href'));
+            expect([...new Set(hrefs)]).to.have.length(expectedCount);
+        });
+    }
+
     // Универсальный контейнер группы фильтра — тот же подход, что и в
     // detailPage.js: поднимаемся от заголовка вверх, пока не найдём внутри
     // хотя бы один чекбокс, предварительно раскрывая аккордеон, если свёрнут.
