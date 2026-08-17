@@ -102,5 +102,23 @@
     "jiraKey": "AS-4565",
     "area": ".",
     "createdAt": "2026-08-12T09:50:14.166Z"
+  },
+  "BugReport/Личный кабинет/i18n_kazakh/BUG-001-bonuses-offline-order-label-not-translated.md": {
+    "id": "BUG-001",
+    "jiraKey": "AS-4571",
+    "area": ".",
+    "createdAt": "2026-08-17T05:54:16.902Z"
+  },
+  "BugReport/Личный кабинет/i18n_kazakh/BUG-002-coupons-empty-state-not-translated.md": {
+    "id": "BUG-002",
+    "jiraKey": "AS-4572",
+    "area": ".",
+    "createdAt": "2026-08-17T05:54:18.448Z"
+  },
+  "BugReport/Личный кабинет/i18n_kazakh/BUG-003-edit-profile-gender-options-not-translated.md": {
+    "id": "BUG-003",
+    "jiraKey": "AS-4573",
+    "area": ".",
+    "createdAt": "2026-08-17T05:54:19.720Z"
   }
 }
