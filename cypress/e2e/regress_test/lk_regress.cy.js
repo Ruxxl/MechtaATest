@@ -162,6 +162,36 @@ describe('Личный кабинет — РЕГРЕСС: сквозной об�
         });
     });
 
+    // Перенесено из main_test/cabinet/orders.cy.js (TC-МО-38, аудит поля
+    // 2026-08-17) — заказ в рассрочку/кредит (payments[].month_count/
+    // pay_sum_per_month) НИ РАЗУ не встретился среди реальных заказов
+    // аккаунта, покрытие закрыто через мок. Детальная страница показывает
+    // ТОЛЬКО способ оплаты ("Способ оплаты: Рассрочка"), без разбивки суммы
+    // по месяцам — подтверждено живым прогоном (не баг, см. комментарий у
+    // TC-МО-38).
+    it('REGR-LK-012: заказ в рассрочку — на детальной странице виден только способ оплаты, без разбивки по месяцам (мок)', () => {
+        cabinetApi.getOrdersList({ status: 'active' }).then(({ body }) => {
+            const any = body.data.orders[0];
+            if (!any) { cy.log('Нет ни одного заказа на аккаунте — кейс пропущен'); return; }
+
+            cy.intercept('GET', `**/v2/personal/order/${any.order.id}`, (req) => {
+                req.continue((res) => {
+                    if (res.body?.data?.order?.payment_info?.payments?.[0]) {
+                        const payment = res.body.data.order.payment_info.payments[0];
+                        payment.type = 'Рассрочка';
+                        payment.month_count = 12;
+                        payment.pay_sum_per_month = 2333;
+                    }
+                });
+            }).as('orderDetail');
+
+            Orders.visitOrderDetail(any.order.id);
+            cy.wait('@orderDetail', { timeout: 40000 });
+            cy.contains('Рассрочка', { timeout: 15000 }).should('be.visible');
+            cy.get('main').should('not.contain.text', '2 333');
+        });
+    });
+
     // ---------- 4. Бонусы и фишки ----------
 
     it('REGR-LK-004: «Бонусы и фишки» — баланс и список операций соответствуют API, детали разворачиваются', () => {
