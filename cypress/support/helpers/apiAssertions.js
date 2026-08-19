@@ -9,7 +9,7 @@ export function waitOptional(alias, { timeout = 15000, expectedStatuses = [200] 
             cy.log(`ℹ️ ${alias}: запрос не отправлен (ожидаемо для этого состояния)`);
             return;
         }
-        expect(interceptions[0].response?.statusCode).to.be.oneOf(expectedStatuses);
+        expect(interceptions[0].response?.statusCode, `${alias}: статус ответа`).to.be.oneOf(expectedStatuses);
         cy.log(`✅ ${alias}: ${interceptions[0].response?.statusCode}`);
     });
 }
@@ -21,7 +21,7 @@ export function waitOptional(alias, { timeout = 15000, expectedStatuses = [200] 
 export function waitAndAssertStatus(alias, expectedStatuses = [200], options = {}) {
     cy.wait(`@${alias}`, { timeout: 15000, ...options }).then(({ response }) => {
         const status = response?.statusCode;
-        expect(status).to.be.oneOf(expectedStatuses);
+        expect(status, `${alias}: статус ответа`).to.be.oneOf(expectedStatuses);
         cy.log(`✅ ${alias}: ${status}`);
     });
 }

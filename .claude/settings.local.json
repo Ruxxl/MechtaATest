@@ -75,7 +75,14 @@
       "Read(//private/tmp/**)",
       "Read(//usr/local/bin/**)",
       "Read(//opt/homebrew/bin/**)",
-      "Read(//usr/local/lib/node_modules/npm/bin/**)"
+      "Read(//usr/local/lib/node_modules/npm/bin/**)",
+      "Bash(bash -c 'curl -s \"https://www.mechta.kz/api/v2/header/cities\" -H \"Accept: application/json\" -H \"X-City-Code: astana\" | head -c 500')",
+      "Bash(bash -c 'curl -s \"https://www.mechta.kz/api/v3/popular/top-categories\" -H \"Accept: application/json\" -H \"X-City-Code: astana\" -H \"X-Mechta-Device-Id: recon5\" | head -c 600')",
+      "Bash(bash -c 'curl -s \"https://www.mechta.kz/api/v3/popular/categories\" -H \"Accept: application/json\" -H \"X-City-Code: astana\" -H \"X-Mechta-Device-Id: recon6\" | head -c 600')",
+      "mcp__chrome-devtools__new_page",
+      "mcp__chrome-devtools__resize_page",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__list_pages"
     ],
     "deny": [
       "Bash(git push --force*)",

@@ -4,7 +4,7 @@ description: "Workflow for writing, extending, or debugging Cypress E2E tests in
 model: inherit
 background: false
 metadata:
-  version: 1.1.0
+  version: 1.3.0
 ---
 
 # Mechta E2E testing workflow
@@ -501,3 +501,18 @@ environment-specific) via live re-verification** — don't wait to be asked:
 4. If the fix landed on Jira's side only (found via step 1, not via your own live check)
    — still re-verify live before trusting it and moving on; a ticket's status is a claim,
    same caution as the "file modified externally" point in section 8.
+
+## 10. Manual card-payment regress runs (live browser, real payment)
+
+Trigger phrases (any of): "Проведи регресс тест по оплате картой", "прогнать регресс
+оплаты картой" (с открытием браузера), or the `/card-payment-regress` slash command —
+this is a distinct interactive workflow from the headless `checkout_card_payment_*_regress.cy.js`
+spec (which intentionally stops short of real payment): drive the real checkout via
+claude-in-chrome, stop at the redirect to the acquirer, wait for the user to actually pay
+and say so, then verify the resulting order — for all 5 cases in one run, without asking
+what to do at each step. Full procedure, default 5-case set, stop-point rule, and the
+exhaustive price/API/field verification checklist (the user's explicit standing
+instruction for this workflow: every price, every arithmetic, every API, every field —
+not spot-checked, including the "Мои заказы" list, not just each order's own page) live
+in `references/manual-card-payment-regress.md` — read it in full before starting this
+kind of run, every time, rather than reconstructing it from memory.

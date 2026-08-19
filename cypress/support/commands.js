@@ -54,6 +54,25 @@ Cypress.Commands.add('loginD5', () => {
     });
 });
 
+// Логин на тестовом стенде pp.im.mdev.kz — отдельный бэкенд (api.pp.im.mdev.kz),
+// та же схема, что и у loginD2/loginD5 (см. комментарий там). ВАЖНО: стенд
+// отвечает только по http, https даёт ERR_CONNECTION_REFUSED (см. memory
+// reference_pp_im_stand) — поэтому url тоже http, а не https.
+Cypress.Commands.add('loginPpIm', () => {
+    cy.request({
+        method: 'POST',
+        url: 'http://api.pp.im.mdev.kz/v2/login',
+        headers: { Accept: 'application/json' },
+        body: {
+            phone: '0000000000',
+            sms_code: '0000',
+        },
+    }).then((response) => {
+        expect(response.status).to.eq(200);
+        expect(response.body.result).to.eq(true);
+    });
+});
+
 // После добавления товара в корзину сайт иногда показывает модалку апсела
 // сопутствующих аксессуаров ("Выберите зарядное устройство" и т.п.).
 // Закрываем её кнопкой "Продолжить", если она появилась, иначе ничего не делаем.
