@@ -133,5 +133,11 @@
     "jiraKey": "AS-4581",
     "area": ".",
     "createdAt": "2026-08-19T04:42:52.751Z"
+  },
+  "BugReport/Избранное/BUG-001-filter-category-count-mismatch.md": {
+    "id": "BUG-001",
+    "jiraKey": "AS-4583",
+    "area": ".",
+    "createdAt": "2026-08-19T05:57:40.252Z"
   }
 }
