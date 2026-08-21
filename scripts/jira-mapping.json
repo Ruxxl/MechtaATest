@@ -139,5 +139,53 @@
     "jiraKey": "AS-4583",
     "area": ".",
     "createdAt": "2026-08-19T05:57:40.252Z"
+  },
+  "BugReport/Оформление заказа/BUG-003-address-not-found-overlaps-delivery-zone-dropdown.md": {
+    "id": "BUG-003",
+    "jiraKey": "AS-4586",
+    "area": ".",
+    "createdAt": "2026-08-20T06:18:20.048Z"
+  },
+  "BugReport/Личный кабинет/cabinet_overview/BUG-035-support-widget-overlaps-sidebar-nav.md": {
+    "id": "BUG-035",
+    "jiraKey": "AS-4587",
+    "area": ".",
+    "createdAt": "2026-08-20T06:35:42.661Z"
+  },
+  "BugReport/Каталог/BUG-001-price-filter-typed-out-of-range-value-silently-discarded.md": {
+    "id": "BUG-001",
+    "jiraKey": "AS-4588",
+    "area": ".",
+    "createdAt": "2026-08-20T06:50:19.568Z"
+  },
+  "BugReport/Для бизнеса/BUG-001-lead-form-submit-does-not-hit-backend.md": {
+    "id": "BUG-001",
+    "jiraKey": "AS-4590",
+    "area": ".",
+    "createdAt": "2026-08-20T08:24:30.423Z"
+  },
+  "BugReport/Для бизнеса/BUG-002-duplicate-section-heading-wholesale.md": {
+    "id": "BUG-002",
+    "jiraKey": "AS-4591",
+    "area": ".",
+    "createdAt": "2026-08-20T08:24:32.024Z"
+  },
+  "BugReport/Для бизнеса/BUG-003-footer-missing-wholesale-link.md": {
+    "id": "BUG-003",
+    "jiraKey": "AS-4592",
+    "area": ".",
+    "createdAt": "2026-08-20T08:24:33.276Z"
+  },
+  "BugReport/Для бизнеса/BUG-004-faq-question-text-differs-from-figma.md": {
+    "id": "BUG-004",
+    "jiraKey": "AS-4594",
+    "area": ".",
+    "createdAt": "2026-08-20T08:43:16.459Z"
+  },
+  "BugReport/Для бизнеса/BUG-004-header-missing-wholesale-link.md": {
+    "id": "BUG-004",
+    "jiraKey": "AS-4596",
+    "area": ".",
+    "createdAt": "2026-08-20T08:50:06.574Z"
   }
 }
